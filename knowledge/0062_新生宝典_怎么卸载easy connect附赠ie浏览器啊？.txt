@@ -1,0 +1,64 @@
+【来源】CC98论坛「新生宝典」版块
+
+【标题】怎么卸载easy connect附赠ie浏览器啊？
+
+【帖子正文】
+简直流氓，求问如何卸载lz尝试了设置-应用，但搜不到ie；去文件所在位置直接shift+delete，说需要一个受信任的卸载权限才可以
+https://file.cc98.org/v4-upload/d/2025/1003/in0vibll.webp
+https://file.cc98.org/v4-upload/d/2025/1003/j42gunyu.webp
+https://file.cc98.org/v4-upload/d/2025/1003/rbkgo14n.webp
+
+
+【精选回复】（共 7 条）
+
+
+--- 回复 1 ---
+[RI_Finch 的回答]
+【电脑医院】适合ZJUer的EasyConnect干净卸载方案 https://www.cc98.org/topic/5522038
+
+
+--- 回复 2 ---
+[Bolic 的回答]
+赶紧卸，流氓软件，还很难卸，现在rvpn有更好选择
+http://itc-zju-edu-cn-s.webvpn.zju.edu.cn:8001/2025/0515/c49385a3051195/page.psp
+
+
+--- 回复 3 ---
+[安希礼 的回答]
+以下是引用3楼：用户Bolic在2025-10-03 14:16:48的发言：>>查看原帖<<
+赶紧卸，流氓软件，还很难卸，现在rvpn有更好选择
+http://itc-zju-edu-cn-s.webvpn.zju.edu.cn:8001/2025/0515/c49385a3051195/page.psp
+等等，atust也是深信服的吧
+——来自微信小程序「CC98」
+
+
+--- 回复 4 ---
+[孤木 的回答]
+以下是引用3楼：用户Bolic在2025-10-03 14:16:48的发言：>>查看原帖<<
+赶紧卸，流氓软件，还很难卸，现在rvpn有更好选择
+http://itc-zju-edu-cn-s.webvpn.zju.edu.cn:8001/2025/0515/c49385a3051195/page.psp
+rvpn还是直接用ZJU connect吧，atrust也是深信服的，不知道还有啥烂活在里边
+
+
+--- 回复 5 ---
+[WangHX2023 的回答]
+把桌面的IE快捷方式删掉就好了，这个IE浏览器是系统自带的，不是Easy Connect附赠的，所以删不掉。Easy Connect怕用户找不到这个浏览器，在桌面上添加了IE的快捷方式而已。
+
+
+--- 回复 6 ---
+[孤木 的回答]
+以下是引用8楼：用户阳光大番薯在2025-10-03 15:22:10的发言：>>查看原帖<<
+以下是引用6楼：用户孤木在2025-10-03 15:20:10的发言：>>查看原帖<<
+以下是引用3楼：用户Bolic在2025-10-03 14:16:48的发言：>>查看原帖<<
+赶紧卸，流氓软件，还很难卸，现在rvpn有更好选择
+http://itc-zju-edu-cn-s.webvpn.zju.edu.cn:8001/2025/0515/c49385a3051195/page.psp
+rvpn还是直接用ZJU connect吧，atrust也是深信服的，不知道还有啥烂活在里边
+请问zjuconnect的链接有吗
+【电脑医院】支持新版 RVPN aTrust 的 ZJU Connect 测试版已发布，欢迎帮忙测试！ https://www.cc98.org/topic/6214942 复制本链接到浏览器或者打开【CC98】微信小程序查看~
+
+
+--- 回复 7 ---
+[Levels 的回答]
+以下是引用7楼：用户WangHX2023在2025-10-03 15:20:21的发言：>>查看原帖<<
+把桌面的IE快捷方式删掉就好了，这个IE浏览器是系统自带的，不是Easy Connect附赠的，所以删不掉。Easy Connect怕用户找不到这个浏览器，在桌面上添加了IE的快捷方式而已。
+已经乱搜删ie的方法然后彻底卸载了，应该问题不大吧

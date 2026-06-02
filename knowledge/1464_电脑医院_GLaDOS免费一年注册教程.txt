@@ -1,0 +1,117 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】GLaDOS免费一年注册教程
+
+【帖子正文】
+2023.03.31 更新和汇总了使用过程中的常见问题和解决方案（包括GPT Access Denied等问题）
+
+GLaDOS, ZJU邮箱可以免费使用一年，支持Win, Mac, iOS, Android, Linux和路由器等几乎所有平台，已经稳定运营6年，速度和稳定性都非常不错。用50M的校园宽带测试YouTube 4k加载速度，发现速度轻松跑满50M，峰值可达58，观看体验非常舒适。
+http://file.cc98.org/v2-upload/2022-10-16/zjgpj3j2.jpg
+
+提示：注册大约需要5分钟，安装软件和完成配置大约需要5-10分钟，流程很简单，仔细操作基本不会有问题
+
+1.进入GLaDOS，点击Register
+http://file.cc98.org/v2-upload/2022-10-16/rbm3f50s.jpg
+
+2.用非教育邮箱注册（教育邮箱仅在后续免费套餐申请中用到），随后会跳转到激活页面，点击Next
+http://file.cc98.org/v2-upload/2022-10-16/uravoomf.jpg
+http://file.cc98.org/v2-upload/2022-10-16/0sqryxc0.jpg
+
+3.页面拉到底，点击左下角的“EducationPlan”（手机端看不到，复制这个链接到浏览器即可https://glados.rocks/console/education/ ）
+http://file.cc98.org/v2-upload/2022-10-16/swr25vzl.jpg
+
+4.在 Apply 中输入自己的ZJU 学号邮箱并获取验证码（务必是学号邮箱，字母邮箱无法通过验证），验证码需要等几分钟，收不到就检查下垃圾邮件（注意，邮件一定可以收到，不要短时间重复发送，可能几分钟就收到，也有可能十几分钟收到，有可能在收件箱，但大概率在垃圾箱）。成功后回到“我的账户”，即可看到套餐变为EDU，时间变为1年
+
+说明: 如果对流量和速度有较高需求，可以到商店购买Basic/Pro套餐，购买后原来的360天EDU套餐也会一起升级为Basic/Pro
+http://file.cc98.org/v2-upload/2022-10-16/54rx5guc.jpg
+http://file.cc98.org/v2-upload/2022-10-16/5eqhd2kj.jpg
+
+5.对于Win, Mac, Android, Linux等设备，回到“首页”，选择不同操作系统，按官网提供的教程操作即可
+http://file.cc98.org/v2-upload/2022-10-16/czpcom5x.jpg
+
+6.对于iOS设备，需要使用Shadowrocket代理软件，软件需要用美区 Apple ID 购买，推荐一个免费共享Shadowrocket账号的网站 樱花云，注册后在 使用文档-iOS下载Shadowrocket 中领取，下载完成后，回到GLaDOS官网-iOS-Shadowrocket，扫码订阅即可
+http://file.cc98.org/v2-upload/2023-03-31/mw1tvb2k.jpg
+
+【常见问题汇总】
+
+ 0. ChatGPT常见问题
+
+（a）是否需要切换为全局Global模式？
+ 看情况，如果默认的Rule模式已经可以访问GPT，则不需要，如果显示Access Denied，参考(d)
+ 
+（b）追问时经常出现Network Error
+ 这个问题是GPT访问量太大导致的，与GLaDOS关系不大。要么升级GPT Plus，要么使用一些第三方API网站
+
+（c）无法进入GPT，显示At Capacity
+ 也是GPT访问量太大导致的，只能等待高峰期过去，或者使用一些第三方API网站
+
+（d）Access Denied 或者 IP使用太多
+ 先清理网站cookies：网站地址栏左侧有一个锁的图标，把openai和gpt的cookie删除，重启浏览器
+ 然后选择节点：Clash-Proxies-Global-选择非HK节点，打开浏览器，重新进入GPT
+ 如果还是Access Denied，重复上述操作，选择不同节点，最后一定会有能用的
+
+1. 如何更改节点？
+ GLaDOS会默认选择最快的节点，正常情况不需要也不建议更改（尤其是小白，按教程操作完就能用，不要乱点），若一定要改，参考下图方法：
+http://file.cc98.org/v2-upload/2023-03-31/rn2b514h.jpg
+
+2. 按教程操作后还是上不了外网？请按照以下顺序排查问题：
+
+（a）用的是ZJU有线网
+ Clash和ZJUVPN冲突，在有线连接时不能使用，建议改用Wi-Fi，一定要用有线的话，参考177楼解决方案：
+以下是引用177楼：用户蒲包肉在2021-11-28 14:12:24的发言：>>查看原帖<<
+（b）没有订阅成功
+ Windows下Clash-Profiles中一定要有一个名为glados的订阅，绿色光标要停留在这个订阅上，且套餐到期时间和流量数据均要正确显示（如下图），订阅失败的解决方案参考问题3
+http://file.cc98.org/v2-upload/2023-03-31/135y3osi.jpg
+（c）Mac开着ZJU RVPN/Webvpn
+ Mac的ClashX很容易和RVPN冲突，安装ClashX Pro（GLaDOS教程里有下载链接）后重新订阅可以解决问题
+
+3. 下载/更新订阅的时候显示Network Error？
+
+（a）确保system proxy已经关闭
+（b）尝试连接其他网络或手机热点
+
+4. 用了一段时间后不能用了/变得很卡？
+
+（a）到GLaDOS官网检查流量是否超出限额
+ 如果所有设备突然不能用，大概率是流量超了，EDU套餐每月30G流量，经常看视频很容易超。要么等到下个月1号流量重置，要么购买付费套餐（流量会立即重置）
+
+（b）更新订阅
+ 由于GLaDOS会定期升级节点，可能会导致旧的配置无法正常连接，更新订阅即可。
+首先关闭System Proxy；Windows在Clash-Profiles中点击订阅右边的小圆圈即可；Mac在配置-托管配置-管理-更新；Shadowrock中向右滑动自己的订阅，点击更新
+
+（c）更换网络
+ 不同网络会导致体验不同，实测5G> ZJUWLAN> ZJUWLAN-Secure> 4G，当然信号强度也会很大程度影响体验。另外校网的偶尔抽风也会导致GLaDOS不可用/变卡
+
+（c）升级套餐
+ 随着EDU用户不断增加，部分同学反映高峰期可能会卡，Pro/Basic套餐应该会好一些（我是Pro套餐，个人体验是ok的）
+
+————
+十大留念
+
+
+【精选回复】（共 4 条）
+
+
+--- 回复 1 ---
+[极北寒天 的回答]
+码住
+——来自微信小程序「CC98」
+
+
+--- 回复 2 ---
+[明眸清酌 的回答]
+之前caoyuchen前辈好像也分享过
+
+
+--- 回复 3 ---
+[treehappy 的回答]
+以下是引用9楼：用户明眸清酌在2020-12-12 08:08:37的发言：>>查看原帖<<
+之前caoyuchen前辈好像也分享过
+
+
+--- 回复 4 ---
+[川渝扛把子 的回答]
+以下是引用1楼：用户Paramore在2020-12-12 02:22:27的发言：>>查看原帖<<
+用起来还是非常舒服的，适用于windows、macos、ios和安卓，可以流畅观看youtube1080p，最重要的是稳定，使用快一年，从未出过问题。
+大家注册可以使用我的邀请码，这样我也可以有1天的套餐延时。
+http://file.cc98.org/v2-upload/xht1wjpi.pdf

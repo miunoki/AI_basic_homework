@@ -1,0 +1,47 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】WSL怎么无损转到另一个盘？
+
+【帖子正文】
+C盘要爆了
+已善用搜索，但网上讲的不清不楚，回复比较少，不敢随意操作，有无成功案例
+
+
+【精选回复】（共 4 条）
+
+
+--- 回复 1 ---
+[zjjncsn 的回答]
+1. 查看wsl版本
+wsl --version
+如果“wsl版本”是2开头的，那就很方便了。按照下面的步骤
+
+2. 输入
+wsl -l
+查看对应Linux系统的名称
+
+3. 输入
+wsl --manage <name> --move <path>
+完成移动。把<name>替换为第二步的名称，<path>替换为目标路径（实际命令里不带尖括号）
+
+wsl 1的没研究过
+
+
+--- 回复 2 ---
+[sayaid 的回答]
+看看这个教程，迁移过一次没什么问题，现在wsl其实也可以指定安装目录了
+https://zhuanlan.zhihu.com/p/621873601?share_code=1rdCtc9DYsx84&utm_psn=2029144459061868402
+
+
+--- 回复 3 ---
+[萌萌人 的回答]
+把wsl导出后指定位置导入
+不信网上的看ms的官方文档
+https://learn.microsoft.com/zh-cn/windows/wsl/basic-commands#export-a-distribution
+里面导出分发和导入发行版两节
+微软的文档里短短几段对distribution有4种翻译 分发 发行版 分发包 分发版也挺难绷的
+
+
+--- 回复 4 ---
+[CC哈哈 的回答]
+有命令能导出到别的盘 再重新安装 具体可以查查GPT

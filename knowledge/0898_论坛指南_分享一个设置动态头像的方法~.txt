@@ -1,0 +1,175 @@
+【来源】CC98论坛「论坛指南」版块
+
+【标题】分享一个设置动态头像的方法~
+
+【帖子正文】
+之前看到好多人有动图头像，然后搜了搜相关的帖子，之前的一些方法好像失效了~
+
+自己摸索的方法是这样的~
+
+**1.** 先随便找一个**能发帖或者回复**的地方，选择**插入图片**，把你想当作头像的gif图上传，上传成功后应该会有一个img标签。像这样
+
+> http://file.cc98.org/v2-upload/\*\*\*\*\*\*\*\*.gif
+
+**2.** 模拟设置头像的发包请求，py版的代码已经写好了，把你的98账户和上面扣出来的**图片链接**填到相应的字段运行一下就可以了~(可能对小白不太友好，小白可以直接跳到第5步~
+
+```python
+import requests
+
+username = ''
+password = ''
+image = ''
+
+headers = {
+ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+ 'Connection': 'keep-alive'
+}
+
+data = {
+ 'client_id': '9a1fd200-8687-44b1-4c20-08d50a96e5cd',
+ 'client_secret': '8b53f727-08e2-4509-8857-e34bf92b27f2',
+ 'grant_type': 'password',
+ 'username': username,
+ 'password': password,
+}
+
+token_url = 'https://openid.cc98.org/connect/token'
+resp = requests.post(url=token_url, data=data, headers=headers).json()
+headers = '{} {}'.format(resp, resp)
+headers = 'application/json'
+gif_url = 'https://api-v2.cc98.org/me/portrait'
+resp = requests.put(url=gif_url, data=bytes('"{}"'.format(image), encoding='utf-8'), headers=headers)
+print('ok' if resp.status_code == 200 else 'fail')
+```
+
+**3.** 记得点一下右上角个人头像，更新一下缓存~
+
+**4.** 希望官方CC98爸爸不要把这个入口给关掉~
+
+**5.** 小白友好版本看这里~在保证你的98登录状态的前提下，按一下F12，切换到浏览器的console一栏~
+
+```
+jQuery.ajax({
+ url: "https://api.cc98.org/me/portrait",
+ type: 'PUT',
+ headers: {
+ 'content-type': 'application/json',
+ authorization: localStorage.getItem('accessToken').slice(4)
+ },
+ data: '"链接放这里哦"',
+ success:function(res, status){
+ console.log(res);
+ },
+ error:function(err) {
+ console.log(err.responseText);
+ }
+});
+```
+然后把之前提取到的链接替换掉上面代码的中的 链接放这里哦，然后把代码放到console里面运行一下就好了~
+
+欢迎大家讨论，如果有其他更好的方法的话~
+
+
+【精选回复】（共 16 条）
+
+
+--- 回复 1 ---
+[谑隼师 的回答]
+6666666666666666666
+
+
+--- 回复 2 ---
+[adddna 的回答]
+5.催技术组加上这个本该有的功能……
+
+
+--- 回复 3 ---
+[拉普拉斯7 的回答]
+挺好的，我也想看我这个头像动起来
+
+
+--- 回复 4 ---
+[kysoo 的回答]
+以下是引用8楼：用户拉普拉斯7在2019-09-20 22:47:11的发言：>>查看原帖<<
+挺好的，我也想看我这个头像动起来
+
+
+--- 回复 5 ---
+[青蛙骑赛艇 的回答]
+感谢！！（小白也搞定了，开心）
+
+
+--- 回复 6 ---
+[ZYYNJS 的回答]
+以下是引用1楼：用户山豆几石叶在2019-09-20 19:37:32的发言：>>查看原帖<<
+之前看到好多人有动图头像，然后搜了搜相关的帖子，之前的一些方法好像失效了~
+
+自己摸索的方法是这样的~
+
+**1.** 先随便找一个**能发帖或者回复**的地方，选择**插入图片**，把你想当作头像的gif图上传，上传成功后应该会有一个img标签。像这样
+
+> http://file.cc98.org/v2-upload/\*\*\*\*\*\*\*\*.gif
+
+**2.** 模拟设置头像的发包请求，py版的代码已经写好了，把你的98账户和上面扣出来的**图片链接**填到相应的字段运行一下就可以了~(可能对小白不太友好
+
+```python
+import requests
+
+username = ''
+password = ''
+image = ''
+
+headers = {
+ 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+ 'Connection': 'keep-alive'
+}
+
+data = {
+ 'client_id': '9a1fd200-8687-44b1-4c20-08d50a96e5cd',
+ 'client_secret': '8b53f727-08e2-4509-8857-e34bf92b27f2',
+ 'grant_type': 'password',
+ 'username': username,
+ 'password': password,
+}
+
+token_url = 'https://openid.cc98.org/connect/token'
+resp = requests.post(url=token_url, data=data, headers=headers).json()
+headers = '{} {}'.format(resp, resp)
+headers = 'application/json'
+gif_url = 'https://api-v2.cc98.org/me/portrait'
+resp = requests.put(url=gif_url, data=bytes('"{}"'.format(image), encoding='utf-8'), headers=headers)
+print('ok' if resp.status_code == 200 else 'fail')
+```
+
+> (https://github.com/96486d9b/boxes/blob/master/cc98/gif.py)
+
+**3.** 记得点一下右上角个人头像，更新一下缓存~
+
+**4.** 希望官方CC98爸爸不要把这个入口给关掉~
+
+欢迎大家讨论，如果有其他更好的方法的话~
+
+
+--- 回复 7 ---
+[魑魅灬魍魉 的回答]
+以下是引用8楼：用户拉普拉斯7在2019-09-20 22:47:11的发言：>>查看原帖<<
+挺好的，我也想看我这个头像动起来
+很期待
+woc我在想什么
+
+
+--- 回复 8 ---
+[InkDust 的回答]
+http://file.cc98.org/v2-upload/jtwgkfgk.gif
+hhh成功了！
+厉害啦我的lz！
+
+
+--- 回复 9 ---
+[我还没想好 的回答]
+http://file.cc98.org/v2-upload/3wobnxxq.jpg
+
+
+--- 回复 10 ---
+[我还没想好 的回答]
+http://wx4.sinaimg.cn/large/006APoFYly1fzv5ctqr31g304804e477.gif

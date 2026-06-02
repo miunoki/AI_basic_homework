@@ -1,0 +1,392 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】基于 VPS + Xray 的廉价高速自建节点教程
+
+【帖子正文】
+**免责声明：以下内容均出于计算机网络技术交流目的，无任何不良导向**
+
+——以低于 4 元/月的成本获得一个专属于自己的梯子，跑满千兆网络，月流量 2 TB
+
+### 0. 预备知识
+
+**VPS**
+
+VPS（Virtual Private Server，虚拟专用服务器）是一种通过虚拟化技术将一台物理服务器分割成多个独立虚拟服务器的服务。简单来说，就是一台配置极低的云服务器，但是具有极低的流量成本。
+
+**Xray**
+
+Xray 是一种 V2Ray 内核。简单来说，就是一个没有 GUI 客户端。
+
+**Reality 协议——THE NEXT FUTURE**
+
+ 基于“偷证书”的流量加密技术，当我们直接通过防火墙时，具有相对于 Shadowsocks、Trojan、VMess 更强的伪装性。
+
+### 1. VPS 购买
+
+**VPS 厂商**
+
+首先需要找一家足够便宜的 VPS 服务商。对于我们的目的，1 核 256 M 的服务器已经绰绰有余了。通常各大厂商 Black Friday 特惠时，可以找到低于 1 美元/月的 VPS。
+
+当然，如果资金充裕，可以使用 CN2 GIA 线路的 VPS——相对于常规出海线路，CN2 GIA 具有更低的网络延迟（香港 < 100 ms，通常 > 200 ms）
+
+不同的网络节点有不同的应用。香港节点通常延迟最低，但是不能访问某些只在美国提供的服务；美国节点延迟较高
+
+下面我们以 Racknerd 为例：
+
+(https://www.racknerd.com/)
+
+首先当然要注册账户。但不推荐使用任何与国内实名绑定的账户。
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/xyqqjfv4.webp)
+
+因为只需要邮箱注册，所以最理想的是挂梯子的情况下，在 outlook/gmail 上注册一个新邮箱，但也不要暴露任何个人信息（姓名、住址）。可以使用类似于 (https://www.ufreetools.com/zh/tool/us-address-generator) 的网站生成一份个人信息。如果需要手机号验证，可以去 SMS 平台上免费或付几块钱接码。
+
+**下单！**
+
+(https://my.racknerd.com/index.php?rp=/store/new-year-specials)
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/vp3xv545.webp)
+
+如果仔细找，可以找到类似于这样的项目——不要被首页的 VPS 骗了。当然，这个价格是偏高的。如果找其他的 VPS 厂商（如 dedirock），最低有 6.45 美元/年的套餐——虽然这家只支持 VISA/PayPal 付款。
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/grvwznui.webp)
+
+然后可以看到这样一个设置界面。这里我们需要把操作系统改成更老的，否则可能跑不动（我通常用 Debian 10）
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/vvzcgxtv.webp)
+
+下一项是 IP 选择。梯子最珍贵的就是这个 IP，因此购买前要先确认 IP 地址的可达性。至于地点和机房，一方面看用途，另一方面不同地理位置有时对应不同的线路，对延迟有影响。而且因为后面我们要偷的域名最好地理位置接近，因此还是值得考虑的。
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/d5leljwr.webp)
+
+测试可达性我们就用 `ping` 即可：
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/35fyhveg.webp)
+
+这个延迟是正常的。如果有丢包问题，就需要换 IP 了——通常，VPS 服务商在 72 小时内提供免费更换 IP 的服务。
+
+如果以上一切正常，那么我们就可以付钱了。
+
+### 2. VPS 连接
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/w4f3zwl3.webp)
+
+购买之后进入后台，可以看到类似于这样子的一个界面（这里的 `123.123.123.123` 是我随便改的——IP 的保密性也是重要的）这个 IP 将会是服务器的公网 IP。
+
+下面我们需要找到类似于这样的东西
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/zgdize2j.webp)
+
+我们可以自己设定新的 root 密码（也有可能是创建时就要求输入）。然后我们使用 `ssh` 登录
+```
+ssh root@123.123.123.123
+```
+然后输入密码即可（Windows 下可能会出现一个 fingerprint，通常信任即可）
+
+### 3. VPS 环境初始化
+
+现在服务器里面是一个全新的系统。第一步当然是 `apt upgrade` 和 `apt update`（对于 Debian 10，因为其生命周期已经结束，因此需要修改 apt 源为 archive.debian.org ）
+
+然后为了安全性（我们暴露在公网环境，是极度危险的），我们需要禁用 root 账户的 ssh 登录，并修改 ssh 端口。我一般直接禁用密码登录，只使用密钥登录。为了不让教程太冗长，这部分就略去。最后，我们应当创建了一个拥有 sudo 权限的新账户。
+
+### 4. VPS 防火墙配置
+
+首先安装 `ufw` （对于 `CentOS` 是 `firewalld`，当然直接用 `iptables` 也没什么问题 XD）
+```
+sudo apt update
+sudo apt install ufw
+```
+然后千万不要直接 `sudo ufw enable`！因为这会直接断掉我们的 ssh 连接（ufw 默认拒绝所有传入连接，允许所有传出连接）。（补救措施是通过 VPS 服务商后台的 VNC 登录）
+首先开放 ssh 的端口（比如在 53535，看上一步怎么改的）
+```
+sudo ufw allow 53535
+```
+然后我们就可以 
+```
+sudo ufw enable
+sudo ufw status
+```
+来看看它是不是正常工作了
+下面我们需要放行 80, 443 端口——这是为了伪装成正规网站，为下一步做准备。
+```
+sudo ufw allow 80
+sudo ufw allow 443
+```
+我推荐同时放行 `TCP/UDP`，这样我们可以实现更多的协议（如 Hysteria 2）
+### 5. Xray 安装
+
+作者提供了一键安装脚本
+
+```
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
+```
+
+Xray 的配置文件在 `/usr/local/etc/xray`
+
+### 6. Xray 配置
+
+这是非常复杂的一步。我在这里只讲怎么配置一个 Reality+Vless+Vision+XTLS 协议的服务。感兴趣的同学可以看官方文档：（虽然也不全就是了，也可以去看 Gituhb 的讨论区）
+
+对于科学上网，核心问题是怎么把不合理的越境流量伪装成正常流量。为了做到这一点，Reality 协议使用了一个极为天才的想法——偷正规网站的证书给自己的 TLS 流量加密——如此在外界看来便是非常正常的 TLS over TCP 流量了，也就避免了传统的 TLS in TLS 流量指纹。
+
+那么什么网站的证书适合偷呢？有以下几条原则：
+
+1. 使用 TLS 1.3 协议
+2. 使用 X25519 签名算法（MLKEM768 抗量子加密算法不影响，但如果证书长度超过 3000 字符，则可以启用 Reality 的后量子加密）
+3. 支持 HTTP/2 协议（H2）
+4. 不使用 CDN - 如果 Reality 目标网站使用 CDN，数据将转发到 CDN 节点，使你的 Reality 节点成为别人的反向代理加速节点
+5. 中国境内不依赖任何代理可以直接访问
+
+符合这些规则的，一般是 VPS 服务器当地的大学官网、旅游局、政府官网等等，也可以偷自己的域名（有机会再讲）。
+
+对于候选网站，我们按 F12 打开开发者工具。在“隐私与安全”下将显示：
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/03vqalea.webp)
+
+这符合要求
+
+然后检验 http：在控制台输入 `window.chrome.loadTimes()?.npnNegotiatedProtocol`
+应当显示 `h2`
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/0miu3bvn.webp)
+
+然后检验是否使用 Cloudflare CDN：在链接末尾加上 `/cdn-cgi/trace`，例如 `https://codepen.io/cdn-cgi/trace`。这样的网站就使用了 CDN，不行
+
+一旦发现了这样一个网站，我们便可以使用进一步检验量子加密性
+```
+xray tls ping www.xxx.com
+```
+下面我们以 `www.usc.edu` 为例，这是一个符合以上要求的网站。
+```
+TLS ping: www.usc.edu
+Using IP: 23.185.0.3:443
+-------------------
+Pinging without SNI
+Handshake succeeded
+TLS Version: TLS 1.3
+TLS Post-Quantum key exchange: true (X25519MLKEM768)
+Certificate chain's total length: 2684 (certs count: 2)
+Cert's signature algorithm: SHA256-RSA
+Cert's publicKey algorithm: RSA
+Cert's allowed domains: 
+-------------------
+Pinging with SNI
+Handshake succeeded
+TLS Version: TLS 1.3
+TLS Post-Quantum key exchange: true (X25519MLKEM768)
+Certificate chain's total length: 2620 (certs count: 2)
+Cert's signature algorithm: SHA256-RSA
+Cert's publicKey algorithm: RSA
+Cert's allowed domains: 
+-------------------
+TLS ping finished
+```
+使用 TLS 1.3，使用 X25519MLKEM768 算法，可惜证书长度不到 3000
+
+当然，连接这个目标网站的延迟越低越好，包括客户端和 VPS——这决定了首次连接的速度
+
+假设我们已经找到了一个符合条件的网站，那我们就可以继续了
+
+首先生成密钥对
+```
+xray x25519
+```
+会得到类似以下内容
+```
+PrivateKey: sGcx6vGksNbCCpD-L3Q5XMh1DVxDlndjCr05WVEIEmM
+Password: JlTzYF6YFXjydoJFmMvdzRpjSP9jBhqW-ZmjKngecgU
+Hash32: 4STBYMs2ov16pLSDMpqRhZ7dEKYwDXkfh5WbIU77t4Q
+```
+记录下来，后面会用到
+
+生成 uuid
+```
+xray uuid
+```
+这样会得到类似这样的字符串：`c5fad61a-0539-4ad8-b43f-cfdd4f1d34f3`
+记录下来，后面会用到。
+
+生成 shortid
+```
+openssl rand -hex 8
+```
+这样会得到类似这样的字符串：`4d2f15238daa9ed3`
+记录下来，后面会用到
+
+然后我们终于可以开始写配置了。完整配置如下：
+```
+{"routing": {
+ "domainStrategy": "IPIfNonMatch",
+ "rules": ,
+ "outboundTag": "block"
+ },
+ {
+ "type": "field",
+ "ip": ,
+ "outboundTag": "block"
+ },
+ {
+ "type": "field",
+ "ip": ,
+ "outboundTag": "block"
+ },
+ {
+ "type": "field",
+ "domain": ,
+ "outboundTag": "block"
+ }
+ ]
+ },
+"inbounds": ,
+ "decryption": "none",
+ "fallbacks": 
+ },
+ "streamSettings": {
+ "network": "tcp",
+ "security": "reality",
+ "realitySettings": {
+ "show": true,
+ "target": "www.usc.edu:443",
+ "xver": 0,
+ "serverNames": ,
+ "privateKey": "sGcx6vGksNbCCpD-L3Q5XMh1DVxDlndjCr05WVEIEmM",
+ "shortIds": 
+ }
+ },
+ "sniffing": {
+ "enabled": true,
+ "destOverride": 
+ }
+ }
+ ],
+ "outbounds": 
+}
+```
+
+其中，`serverNames` 和 `target` 填偷的域名，`id` 对应我们生成的 `uuid`，`privateKey` 对应我们 `x25519` 生成的 `PrivateKey`，`shortIds` 里面放最后一步生成的 `shortid`。
+
+如果一切正常，我们就可以
+```
+sudo systemctl start xray
+```
+启动服务端。然后
+```
+sudo systemctl status xray
+```
+查看是否正常运行
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/5a5o4fxq.webp)
+
+这样便是正常的了
+
+### 7. 客户端配置
+
+客户端使用 V2Ray，因为 Clash 系配置起来太麻烦了（）
+
+（这里有个地方写错了，Cilent ID 应该就是前面生成的那个）
+
+![](https://file.cc98.org/v4-upload/d/2026/0109/frk1easn.webp)
+
+如果一切正常，那么就可以连接了！如果遇到任何问题，也可以在下面询问。我会尽力回复。
+
+### 8. 待续
+
+**偷自己的域名**
+
+**基于 nginx 的伪装**
+
+**Vless 协议与域名回落 (Fallback)**
+
+
+【精选回复】（共 9 条）
+
+
+--- 回复 1 ---
+[Zefiro380 的回答]
+Ubuntu的默认防火墙也是ufw吧，和Debian一样
+
+
+--- 回复 2 ---
+[D2_m 的回答]
+bd，有兴趣的还可以尝试一下 sing-box 内核
+
+
+--- 回复 3 ---
+[带湾带恶人 的回答]
+感谢大佬。
+
+然后检验是否使用 Cloudflare CDN：在链接末尾加上 /cdn-cgi/trace，例如 https://codepen.io/cdn-cgi/trace。这样的网站就使用了 CDN，不行
+
+一旦发现了这样一个网站，我们便可以使用进一步检验量子加密性
+
+这部分没太看懂。这里什么样的网站使用了CDN呢？
+
+
+--- 回复 4 ---
+[倪黯之 的回答]
+"id": "`c5fad61a-0539-4ad8-b43f-cfdd4f1d34f3",
+"shortIds": 
+里面反引号“`”是必须的嘛
+
+
+--- 回复 5 ---
+[llllIIIIll 的回答]
+有用bd，自己配置时遇到了一点小问题，配置文件的id要填之前生成的uuid，不然我的config会报错https://file.cc98.org/v4-upload/d/2026/0410/25qdjfzo.webp
+
+
+--- 回复 6 ---
+[零贰 的回答]
+大佬，在配置过程中在不打开ufw的情况下，可以正常连接；但是一旦打开ufw，就会超时。目前排查了ufw开放的所有端口只有供ssh连接的和xray的，这个问题有什么解决方法吗
+
+
+--- 回复 7 ---
+[方临弈 的回答]
+lzlz，xray配置中的fallback好像设置有问题，流量不能重复传回443端口，如果不删掉就监听不到443端口，可以把整个fallback部分去掉
+还有客户端的id就是服务器端的id，不能够随机生成，我debug了好久才成功
+
+
+--- 回复 8 ---
+[猿氏 的回答]
+请问一下最后在v2rayN上使用 “测试延迟 TCPing”的话能连通，但是选择“测试真连接延迟”会显示-1
+我看VPS上的sudo systemctl status xray会显示一条记录
+```
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 hs.c.ClientVer: 
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 hs.c.ClientTime: 2026-04-28 13:31:12 +0000 UTC
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 hs.c.ClientShortId: 
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 hs.c.conn == conn: true
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 len(s2cSaved): 8192 Server Hello: 1215
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 len(s2cSaved): 6977 Change Cipher Spec: 6
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 len(s2cSaved): 6971 Encrypted Extensions: 41
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 len(s2cSaved): 6930 Certificate: 8125
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 len(s2cSaved): 7306 Certificate: 8125
+Apr 28 13:31:13 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6380 hs.c.isHandshakeComplete.Load(): false
+```
+
+在v2rayN上可以看到
+```
+初始化配置
+启动服务 (2026/04/28 21:33:18)...
+D:\v2rayN-windows-64\binConfigs\configTest5417653236281421734.json
+Xray 26.2.6 (Xray, Penetrates Everything.) 12ee51e (go1.25.7 windows/amd64)
+A unified platform for anti-censorship.
+2026/04/28 21:33:18.835201 infra/conf/serial: Reading config: &{Name:configTest5417653236281421734.json Format:json}
+2026/04/28 21:33:18.839174 core: Xray 26.2.6 started
+2026/04/28 21:33:19.908646 from tcp:127.0.0.1:53802 accepted tcp:www.google.com:443 
+2026/04/28 21:33:25 测试完成
+```
+
+可能的原因是什么呢？或者我有什么办法可以debug吗？
+
+---
+似乎是最开始找纽约大学的证书太长了（八千多），导致xray处理不了了，换了一个短一点的就可以了
+
+
+--- 回复 9 ---
+[llllIIIIll 的回答]
+以下是引用19楼：用户猿氏在2026-04-28 20:45:23的发言：>>查看原帖<<
+请问一下最后在v2rayN上使用 “测试延迟 TCPing”的话能连通，但是选择“测试真连接延迟”会显示-1
+我看VPS上的sudo systemctl status xray会显示一条记录
+Apr 28 12:40:20 racknerd-fa6ca9b xray: REALITY remoteAddr: 222.205.124.178:6105 hs.c.isHandshakeComplete.Load(): false
+
+可能的原因是什么呢？或者我有什么办法可以debug吗？
+重新检查shortid，public key，或者是端口设置有问题，具体可ai

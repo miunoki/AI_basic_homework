@@ -1,0 +1,91 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】小白也能懂的Linux服务器安装梯子方法  （服务器 Linux clash 梯子 非root 网络 github huggingface）
+
+【帖子正文】
+上期（https://www.cc98.org/topic/6372788）讲到了如何通过一个简单的反向端口把本地clash挂到服务器上，但是如果电脑合上了这个连接就没了。
+
+## 本期方案适用情况
+- 正在使用Linux服务器，需要持续稳定的起飞连接，例如下载数据集
+- 不是服务器的root用户，没有管理权限 （如果你是root用户的话看这个就行：(url)）
+
+## 具体流程
+前提：需要本地已经安装Clash梯子。（不会的话可以看这个：MacOS安装ClashX Pro教程 https://github.com/clashbk/clash/wiki/clashx-pro）
+
+### 一、检查服务器架构类型
+
+```shell
+uname -m
+```
+输出x86_64那么架构名是amd64，aarch64的架构名是arm64，其他可以网上查一下
+
+### 二、 下载mihomo插件
+访问(url)
+找到对应的版本下载，格式是`mihomo-linux---.gz`
+
+### 三、上传到服务器并解压 
+
+（也可以先本地解压）
+在本地运行
+```shell
+rsync -av --progress .gz @:
+```
+
+在服务器的存储路径输入
+```shell
+gunzip -c .gz > mihomo # 解压
+chmod +x mihomo # 添加执行权限
+mkdir -p ~/bin # 在自己的用户目录下创建bin
+cp mihomo ~/bin/ # 复制目录
+```
+
+### 四、 配置代理
+
+在服务器输入
+```shell
+mkdir -p ~/.config/mihomo # 在自己的用户目录下创建configurations
+```
+
+**方案1**: 将本地的Clash配置yaml文件直接上传到这个文件夹 `~/.config/mihomo`，并作如下修改：
+```yaml
+geodata-mode: true # 如果是False的话MMDB下载不了，因为没有梯子
+# 修改port防止冲突
+external-controller: :9091 # 一般都是9090，但是会和服务器本身的网络冲突
+port: 7892 # 7890 可能已经被服务器占用
+socks-port: 7891
+```
+
+**方案2**: 根据https://zfxt.top/posts/70b7a805/ 里面的详细描述重新手动配置
+```shell
+vi ~/.config/mihomo/config.yaml
+```
+
+### 五、启动代理
+```shell
+ ~/bin/mihomo -d ~/.config/mihomo
+#修改proxy端口
+export http_proxy=http://127.0.0.1:7892
+export https_proxy=http://127.0.0.1:7892
+
+# 测试连接
+curl https://httpbin.org/ip #应该会显示mihomo的IP
+```
+
+第五步代码可以在一个tmux窗口里运行，让梯子在后台挂着，防止关闭本地连接导致梯子断连。
+
+非root用户在linux安装tmux的教程：(url)
+
+
+【精选回复】（共 2 条）
+
+
+--- 回复 1 ---
+[MISAKA1902 的回答]
+bd
+提示
+Mihomo为Clash Meta改名
+
+
+--- 回复 2 ---
+[荧惑守心 的回答]
+提示Can't find GeoIP.dat, start download卡住了，是不是需要自己下载呀？

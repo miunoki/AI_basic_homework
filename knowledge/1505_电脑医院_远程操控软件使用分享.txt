@@ -1,0 +1,106 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】远程操控软件使用分享
+
+【帖子正文】
+> 本文是个人远程操控软件使用经验整理。我的主要使用场景是两台 Windows、一台 Linux 和一台华为手机；常用工具是 UU远程、Parsec、Sunshine+Moonlight 和 Tailscale。ToDesk、向日葵等作为保底远控入口，描述可能不如主力工具充分。由于学校 IPv6 存在限制，本文暂不讨论 IPv6 直连方案；NAT 类型和打洞成功率比较玄学，不展开原理和解决方案。此外，主要讨论的是电脑作为被控端，暂不讨论手机。
+
+## 简要总结
+
+- **开箱即用**：优先 UU远程；ToDesk、向日葵作为救急和保底入口。
+- **低延迟 Windows 远控**：优先 Parsec，尤其是从 Windows/Linux 客户端连接校内 Windows Host。若两端都是网页认证网络，Parsec 通常延迟更低；若一端走 L2TP 认证，或 Tailscale 能形成 direct，Tailscale + Sunshine+Moonlight 可能更清晰流畅。
+- **接近本地操控**：direct/P2P 路径 + Sunshine+Moonlight。Tailscale 只负责组网；只有最终形成 direct 路径时，才适合承载高码率串流。
+- **Linux**：优先 Tailscale + SSH / VS Code Remote，不优先完整图形桌面；Sunshine+Moonlight 只适合作为图形桌面实验项，非 direct 时会明显卡顿。
+
+远程操控可以分成两层：
+- **网络互联层**：Tailscale、其它打洞/虚拟组网软件，负责让设备互相可达。
+- **画面操控层**：UU远程、Parsec、Sunshine+Moonlight、ToDesk、向日葵、RDP，负责传画面、键鼠、声音和部分剪贴板/文件能力。
+
+Tailscale 在本文只作为组网工具处理，不和远控软件做功能对比；它能不能提升体验，取决于上层远控工具最终走 direct 还是 relay/DERP。
+
+影响流畅度和清晰度的核心因素是硬件编解码、主机负载、上行带宽、延迟、丢包和抖动。实际使用时，应通过分辨率、码率、帧率和画质档位，在清晰度与流畅度之间取舍。
+
+## 使用场景
+
+| 场景 | 首选 | 备选 | 理由 |
+| --------------- | -------------------------------- | ------------------------ | ------------------------------ |
+| 免费开箱即用远控 | UU远程 | ToDesk / 向日葵 | 剪贴板、文件传输、虚拟屏、防窥、画质和帧率体验更均衡 |
+| 临时操控别人电脑 | ToDesk / 向日葵 | UU远程 | ID/验证码或账号设备体系上手快 |
+| Windows 低延迟远控 | Parsec | UU远程 | 校内 Windows 到 Windows 延迟低，配置少 |
+| 追求接近本地操控 | Sunshine+Moonlight | Parsec | direct/P2P 路径下清晰度和流畅度最好 |
+| 手机/平板远控电脑 | UU远程 | ToDesk / 向日葵 / Moonlight | 移动端输入、剪贴板、文件传输和防窥更省心 |
+| Linux | Tailscale + SSH / VS Code Remote | ToDesk / 向日葵 | Linux 日常远程生产力优先走命令行和端口 |
+| NAS / 内网 Web 服务 | Tailscale | 路由器 VPN / 其它打洞软件 | 直接访问内网 IP、SSH、Samba、Web 管理页更方便 |
+
+## 平台支持
+
+平台支持要区分 Host / 被控端 和 Client / 主控端。Parsec 的 Host 主要是 Windows/macOS；Sunshine 是 Host，Moonlight 是 Client。
+
+| 工具 | Windows | macOS | Linux | Android | iOS / iPadOS |
+| --------- | -------------- | ---------------- | ----------------- | ------------------ | ------------ |
+| UU远程 | 主机端 + 客户端 | 主机端 + 客户端 | 不作为 Linux 主力方案 | 客户端 | 客户端 |
+| ToDesk | 主控 + 被控 | 主控 + 被控 | 主控 + 被控，发行版兼容性要实测 | 主控为主，也支持远程手机场景 | 主控为主 |
+| 向日葵 | 主控 + 被控 | 主控 + 被控 | 主控 + 被控，发行版兼容性要实测 | 控制端 + 客户端，部分安卓可被控 | 控制端 + 客户端 |
+| Parsec | Host + Client | Host + Client | Client only | Client only，官方称实验性 | 不支持 |
+| Sunshine | Host | Host，macOS 功能仍有限 | Host | 不适用 | 不适用 |
+| Moonlight | Client | Client | Client | Client | Client |
+| RDP | Windows 专业版可被控 | Client | Client | Client | Client |
+
+建议：
+- Windows：装 Tailscale、UU远程、Parsec；ToDesk/向日葵保留一个作救急入口；常被远控的再装 Sunshine。
+- Linux：装 Tailscale，主力走 SSH / VS Code Remote；Sunshine 可作为图形桌面。需要操控 Windows 主机时，优先用 Moonlight 或 Parsec；其它通用远控在 Linux 场景下通常不是最清晰或最流畅的选择。
+- 华为手机：装 Tailscale、UU远程、ToDesk/向日葵、Moonlight；办公优先 UU/ToDesk/向日葵，低延迟看画面或游戏再用 Moonlight。
+
+## 功能对比
+
+| 功能 | UU远程 | ToDesk | 向日葵 | Parsec | Sunshine+Moonlight | RDP |
+| ------------------- | -------------------- | ---------------- | ----------- | ------------------------ | ------------------ | ---------- |
+| 画面流畅度 | 高画质/高帧率开放，久用卡顿需重连 | 个人版最高 1080P/30FPS、4Mbps | 免费版最高标清 1024×768/30FPS | 低延迟强，尤其 Windows Host | direct/P2P 时最接近本地 | 内网/组网内稳定 |
+| 文件传输 | 支持内置文件传输 | 支持内置文件传输 | 支持内置文件传输 | 不作为文件传输工具 | 不提供传统远控式文件传输 | 支持剪贴板/磁盘重定向 |
+| 剪贴板 | 支持文本剪贴板同步 | 支持文本剪贴板同步 | 支持文本剪贴板同步 | 支持文本剪贴板复制粘贴 | 不提供完整自动剪贴板同步 | 支持剪贴板重定向 |
+| 远程声音 | 支持远端声音传输 | 支持远端声音传输 | 支持远端声音传输 | 支持远端声音传输 | 支持远端声音传输 | 支持音频重定向 |
+| 麦克风到远端 | 支持麦克风直连 | 支持麦克风映射 | 免费版不列为麦克风方案；USBIP 属高级权益 | 支持 Windows/macOS 客户端到 Windows Host | 不支持 | 支持麦克风重定向 |
+| Alt+Tab / Windows 键 | 支持系统快捷键转发设置 | 支持系统快捷键转发设置 | 支持系统快捷键转发设置 | Immersive Mode 后支持系统快捷键转发 | 依赖 Moonlight 输入捕获 | 原生远程桌面体验 |
+| 虚拟屏 / 无头 | 支持虚拟屏/防窥 | 个人版支持虚拟屏，更多虚拟屏属付费权益 | 会员解锁更完整的虚拟屏/多屏能力 | Windows 可配 VDD | 依赖物理屏、假负载或系统虚拟屏 | 可不依赖物理屏 |
+| 移动端 | 支持手机/平板控制电脑 | 支持手机/平板控制电脑 | 支持手机/平板控制电脑 | 支持 Android 客户端，不支持 iOS/iPadOS | 支持手机/平板客户端 | 支持手机/平板客户端 |
+
+手机远控输入密码时，可能因为输入法、大小写、符号键盘或远程键盘映射出错。更稳的做法是在手机本地备忘录、电脑其他可见输入框或密码管理器里先输入确认。
+
+## 网络场景
+
+远控体验主要受这些因素影响：被控端上行、丢包、抖动、往返延迟、硬件编解码，以及最终是否形成 P2P/direct 路径。
+
+| 场景 | 推荐 | 理由 |
+| ----------------------- | ------------------------------------------------------- | ------------------------------------------------------ |
+| 校内 Windows 到 Windows | Parsec 优先；极限体验再试 Sunshine+Moonlight | 校内延迟通常最低，Parsec 低延迟体验好 |
+| 校内同网段或 Tailscale direct | Sunshine+Moonlight 可试 1080p/60、2K/60，再逐步升码率 | direct 时 Moonlight 最接近本地清晰度和流畅度 |
+| 校内到校外 / 校外到校内 | 先看是否 P2P/direct；不行再用 UU/ToDesk/向日葵保底；尝试 5G 内网热点，有时候体验更好 | 中继/服务器转发会更容易卡顿、糊、输入延迟高；热点可能绕开校园网认证、出口防火墙、UDP 限制或复杂 NAT |
+| Linux 远程工作 | Tailscale + SSH / VS Code Remote | 比图形远控更稳、更省带宽 |
+
+关于代理、TUN 和打洞：
+- 打洞和穿透软件很多，可以自行探索；关键不是软件名字，而是最终有没有形成低延迟、低丢包、P2P/direct 路径。
+- 开全局代理或 Clash TUN 后，Tailscale 有时无法成功打洞，原本可能 direct 的连接会变成 relay/DERP。可以尝试先关掉 TUN 使打洞成功，再重新打开 TUN。
+- 两端都是网页登录认证的校园有线网时，靠反复开关 TUN “卡 bug”通常不能稳定获得更高流畅度；这类操作更适合排障，不适合作为长期提速方案。
+- 如果 Tailscale 是 relay/DERP，不要指望高码率串流；优先 SSH、VS Code Remote、文件传输或低画质远控。
+- Cloudflare Zero Trust/WARP-to-WARP 可作为替代私网方案测试，但需要以是否形成低延迟路径和串流实测为准。
+- 对于 WiFi，亲测 ZJUWLAN 会比 ZJUWLAN-secure 体验更好。
+- 校外访问校内可以尝试挂 rVPN，有时会更好用。
+- 海外远程可以关注 ToDesk 相关套餐，或通过 VPS 专线、Cloudflare 等方案中转；这类方案更偏向“保证能连上”，但受物理距离限制，整体延迟仍然很难做到接近本地。
+
+## 参考资料
+
+- (https://www.todesk.com/)
+- (https://sunlogin.oray.com/)
+- (https://www.uuapps.cc/)
+- (https://moonlight-stream.org/)
+- (https://app.lizardbyte.dev/Sunshine/)
+- (https://parsec.app/)
+- (https://tailscale.com/)
+
+
+【精选回复】（共 1 条）
+
+
+--- 回复 1 ---
+[袭梦霞光 的回答]
+rustdesk+阿里云服务器，bd

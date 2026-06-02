@@ -1,0 +1,274 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】关于在 Claude Code 中接入 Gemini 官方 API 的配置教程（基于Win 11）
+
+【帖子正文】
+> 前言：关于lz为什么会突发奇想，在 Claude Code 中配置 Gemini 的API，其实是综合多方面因素考量的。
+>
+> 首先，Gemini 是御三家中使用国内银行卡（在不使用 Apple pay 、虚拟卡或代充的情况下）能够“更轻松”订购到的AI。Google pay 对于银行卡的审查并不那么严格，目前使用国内万事达或Visa卡即可订阅。但是对于 ChatGPT 和 Claude，其审查就较为严格，至少lz没有成功（）
+>
+> 同时，结合 Gemini 不错的性价比、不少的额度、多模态功能（以及一言难尽的Antigravity），以及目前还“看的过去”的智商，在 Claude code 中使用 Gemini 其实是一个可选的选择。
+> 
+> 因此，我结合 AI 给我的建议，成功在 Claude Code 上配置了 Gemini 的官方 API。同时，将我的**使用记录**总结如下。（其实，更常用的是在 Claude Code 中配置国内大模型，如 deepseek（而且配置比较简单）。这里不再赘述，如有需要可以查看其它教程。）
+
+> 当然，如果大家有更好的办法，或者是更好的选择，欢迎来推翻或补充！
+
+> 关于科学上网、以及如何在 CLI 中介入 VPN 的方法请自备（可以询问AI），这里不再赘述。
+
+## Claude Code 安装
+
+> 在这里，我们假设已经完成了 (https://git-scm.com/) 与 (https://nodejs.org/zh-cn) 的安装。
+>
+> 这些安装都相当简单，不再赘述。
+
+打开 Windows 终端的 Powershell，粘贴以下命令：
+
+```powershell
+npm install -g claude-code
+```
+
+之后，关闭你的终端窗口，打开一个新窗口，运行：
+
+```powershell
+claude --version
+```
+
+如果成功安装，你应该看到一个版本号。
+
+> 如果系统提示检测不到 `claude` 命令，可能是在安装时没有设置环境变量。
+>
+> 找到你的 `claude.exe` 的位置，复制这个文件夹的地址，然后在 `编辑系统环境变量` -> `系统变量` -> `Path` -> `编辑` -> `新建` 中粘贴该地址，一路确定下去即可。之后，再次运行`claude --version`，应该可以得到结果。
+
+之后，你可以在导航到一个项目文件夹，并输入：
+
+```powershell
+claude
+```
+
+这样就可以启动 Claude Code 了。
+
+## CC Switch 安装
+
+打开 (https://github.com/farion1231/cc-switch/releases)，在最新版本的 Assets 部分下载你想要的版本（如果你是 Windows ，建议下载 `***-Windows.msi` 版本）。
+
+下载完成后点击安装，你可以将其安装到你想要的位置，比如 `D:/CC Switch`。
+
+## CCR 安装
+
+直接在命令行输入：
+
+```powershell
+npm install -g @musistudio/claude-code-router
+```
+
+之后，输入：
+
+```powershell
+ccr -v
+```
+
+如果输出对应的版本号，那么说明安装成功。
+
+## Gemini 配置
+
+### Gemini API Key 获取
+
+打开 (https://ai.google.dev/aistudio)，使用 Google 账号登录。
+
+之后，先在新标签页打开 (https://console.cloud.google.com/projectcreate)，输入 `Project name` 栏目，并点击 `Create` 创建即可。
+
+创建完成后，点开左侧栏中的 `Dashboard`，点击 `API Keys`。
+
+点击右上角的 `Create API Key`，填入 `Name your key`，并点击 `Choose an imported project` 中的 `import project`，选中你刚刚创建的项目，并点击 `Import` 进行导入。
+
+点击 `Create key`，并将 `API key` 复制下来保存到其它地方。
+
+现在，Gemini API key 已经创建完成，但是还需要开通 `Payments`。
+
+点击 `Dashboard` 左侧栏中的 `Billing`，进行 `$10` 的充值。之后，你就升到了 `Paid 1`的等级。然后，观察你的 `Projects` 部分，你的项目也升到了 `Tier 1` 的等级，可以使用了。
+
+同时，我建议你在 `Dashboard` 左侧栏中的 `Spend` 选项卡中，选中 `Edit spend cap` 设置一下每月消费上限。
+
+之后，你也可以在 `Dashboard` 左侧栏中的 `Usage` 选项卡中，观察你的API 使用情况。
+
+### 开始配置
+
+#### 关于终端的选择
+
+Windows 上有两种常见的终端，它们的命令语法**完全不同**。
+
+**强烈推荐使用 Git Bash**，原因很简单：
+
+- `Ccr` 工具本身就是为 bash 环境设计的（`ccr activate` 输出的是 bash 语法）
+- 网上大部分 CCR 教程用的都是 bash 命令
+
+#### CCR 配置
+
+CCR 的所有配置存放在的 `.claude-code-router` 文件夹中。
+
+在 Git Bash 终端中，运行：
+
+```bash
+mkdir -p "$HOME/.claude-code-router"
+```
+
+> 如果提示文件夹已存在（`File exists`），不用管，这是正常的。
+
+然后，用 Windows 记事本打开配置文件：
+
+```bash
+notepad "$HOME/.claude-code-router/config.json"
+```
+
+> - 如果文件不存在，记事本会提示"是否创建新文件"——点击**"是"**
+> - 如果文件已经存在且里面有内容，**全部删除**，我们要写入全新内容
+
+之后，将以下内容完整复制粘贴到记事本中：
+
+**注意将 `<input your port>` 替换为你的实际代理端口。**
+
+**注意将 `<input your api key>` 替换为你的 `Gemini api key`。**
+
+```json
+{
+ "LOG": true,
+ "PORT": 3456,
+ "PROXY_URL": "http://127.0.0.1:<input your port>",
+ "Providers": ,
+ "transformer": {
+ "use": 
+ }
+ }
+ ],
+ "Router": {
+ "default": "gemini,gemini-3-flash-preview",
+ "background": "gemini,gemini-3.1-flash-lite",
+ "image": "gemini,gemini-3-flash-preview",
+ "think": "gemini,gemini-2.5-pro",
+ "longContext": "gemini,gemini-2.5-pro",
+ "webSearch": "gemini,gemini-3.1-flash-lite"
+ }
+}
+```
+
+> | 配置项 | 简单解释 | 为什么这样填 |
+> | ------------------------------------ | --------------------------- | ------------------------------------------------------------ |
+> | `"LOG": true` | 开启日志记录 | 出问题时可以回来看日志找原因 |
+> | `"PORT": 3456` | CCR 在本机 3456 端口监听 | **这个端口号很重要！后面 CC Switch 要指向这里** |
+> | `"name": "gemini"` | 给这个供应商起名叫 "gemini" | 后续 Router 部分用这个名字来引用 |
+> | `"api_base_url"` | Gemini 的 API 地址 | **注意结尾必须是 `/models/`**，CCR 会把模型名拼接在后面 |
+> | `"api_key"` | 你的 Gemini 密钥 | **真正的 API Key 只在这里！** Google AI Studio 给你的那个字符串 |
+> | `"models"` | 你要用哪些 Gemini 模型 | 至少写一个。`gemini-2.5-flash` 快且便宜，`gemini-2.5-pro` 更聪明 |
+> | `"transformer": {"use": }` | 使用 Gemini 格式翻译器 | **这是整个配置的灵魂！** 没有它，CCR 不知道怎么翻译格式 |
+> | `"Router"` | 不同场景分别用什么模型 | **default / background / image 三个都必须写**，缺一个 CCR 就会崩溃 |
+>
+> **关于维护：**
+>
+> **`gemini-2.5-pro` 会在 2026年6月17日（约 5 周后）停止服务。届时如果 `gemini-3.1-pro-preview`还是 503 状态，你的 Pro 路由就会空缺。**不过目前没有更好的替代品，只能先用着，到时再调整。
+>
+> 这是由于 Google GPU 算力不足，是整个 Gemini 开发者社区都在面对的现实。Google 预计 4-5 月（也就是最近）发布 3.1 Pro 的 GA 稳定版，届时会大幅扩充算力，503 问题应该会缓解。在此之前，目前配置方案（Pro 走 2.5-pro，Flash 走 3-flash-preview）已经是最佳选择了。
+>
+> 因此，需要关注 Google 模型版本的发布情况，及时更新相关路由。当然，记得在CCR 的 `config.json` 与 `CC Switch`中同步更新。
+
+点击保存（或按 `Ctrl+S`），并关闭记事本。
+
+> 确认保存类型是"所有文件 (\*.\*)"，编码是"UTF-8"
+
+#### 启动 CCR 服务
+
+启动 CCR，让它在本机 3456 端口开始监听。
+
+在 Git Bash 中输入： 
+
+```bash
+ccr start
+```
+
+之后，再打开另一个 Git Bash，输入
+
+```bash
+ccr status
+```
+
+- 如果成功：终端会显示类似 `Listening on http://127.0.0.1:3456` 的信息，然后光标停在那不动了。**这是正常的！** 说明 CCR 正在后台运行。
+- **运行 `ccr start` 的终端窗口不能关**，关了 CCR 就停了。你可以把它最小化。
+
+> 如果报错：端口被占用 `Error: listen EADDRINUSE: address already in use 127.0.0.1:3456`
+>
+> 这是因为 3456 端口已经被其他程序占用了。解决方法：
+>
+> ```bash
+> # 第一步：查看是谁占用了 3456 端口
+> netstat -ano | findstr :3456
+> 
+> # 输出的最后一列是进程 ID（PID），比如 12345
+> # 第二步：强制关闭那个进程（把 12345 替换成实际的 PID）
+> taskkill /PID 12345 /F
+> 
+> # 第三步：重新启动 CCR
+> ccr start
+> ```
+
+### 配置 CC Switch 并与 CCR 联动
+
+> ⚠️ 重要：很多用户在这里犯错——他们以为应该直接添加 Gemini 供应商。这是错的！因为 CC Switch 没有 Gemini 协议翻译能力，直接配置 Gemini API 地址会收到 400 错误或完全无法使用。
+>
+> 正确做法：在 CC Switch 中添加一个指向 CCR 的"中转供应商"。CC Switch → CCR → Gemini，让 CCR 来做翻译。
+
+具体操作如下：
+
+- 在 CC Switch 主界面，确认顶部标签栏选中的是 `Claude` 标签
+- 点击右上角的 `+` 按钮（添加供应商）。
+- 在弹出的添加窗口中，按以下内容填写：
+
+| 字段 | 填写内容 |
+| ----------------------- | ---------------------------- |
+| **预设供应商** | 自定义配置 |
+| **供应商名称** | `Gemini (via CCR)` |
+| **API Key** | `dummy-key` |
+| **请求地址** | `http://localhost:3456` |
+| **高级选项 - API 格式** | `Anthropic Messages（原生）` |
+| **主模型** | `gemini-3-flash-preview` |
+| **Haiku 默认模型** | `gemini-3.1-flash-lite` |
+| **Sonnet 默认模型** | `gemini-3-flash-preview` |
+| **Opus 默认模型** | `gemini-2.5-pro` |
+
+- 点击右下角的 **添加** 按钮保存。
+- 回到主界面，找到刚才添加的 "Gemini (via CCR)" 卡片。
+- 点击卡片上的 **启用** 按钮，启用这个供应商。
+
+#### 日常使用
+
+启动顺序：`打开 VPN`→ `新建一个 Git Bash 终端，输入ccr start`（注意该终端不要关闭！）→ `打开 CC Switch` → `切换到 Gemini (via CCR)` → `新建一个终端，输入claude`
+
+> 如果端口被占用，可以在 `Git Bash` 输入`rm "$HOME/.claude-code-router/.claude-code-router.pid"`
+>
+> 出现这种情况可能的原因：
+>
+> 1. 之前：CCR 以 PID 28492 启动，正常运行
+> 2. 关闭 Git Bash 窗口：CCR 收到 SIGINT 退出，但 PID 文件没有被清理（仍写着 28492）
+> 3. 之后：Windows 把 28492 这个 PID 分配给了 conhost.exe（控制台窗口宿主进程，几乎总是会运行）
+> 4. 运行 ccr start：CCR 检查 PID 文件 → 发现 28492 → 检查进程是否存在 → 存在！（只不过是 conhost.exe）→ 误以为 CCR已在运行 → 拒绝启动，直接返回
+> 5. 运行 ccr status：同样的逻辑，读取 PID 文件 → 进程存在 → 报告 "Running"（假活）
+> 
+> 而且，有时候，还有一种无法连接的原因，是因为你在 CLI 中开启了 CLI 使用的 VPN。这是因为在 CCR 的配置文件中，我们已经配置了 `PROXY_URL`，如果再在 CLI 中开启VPN（如使用`proxy_on`），会导致 CCR 的 TCP 连接也被代理劫持，而代理无法正确转发本地 HTTP 流量，导致 CCR 收到请求但返回空响应。
+
+接下来，差不多就配置成功了。如果问问题后得到回复，说明就配置成功了（当然，也可以去 API 平台去看一下 API 的使用情况）。
+
+
+【精选回复】（共 3 条）
+
+
+--- 回复 1 ---
+[Haibara121 的回答]
+昨天刚在琢磨这个今天就看到讲解了，爱你
+
+
+--- 回复 2 ---
+[拒绝llr7次 的回答]
+bd cc接哈基米api
+
+
+--- 回复 3 ---
+[浅灰色 的回答]
+bdbd，昨天全网搜索了都没有找到这么细致的教程

@@ -1,0 +1,35 @@
+【来源】CC98论坛「论坛指南」版块
+
+【标题】起猛了，98的UBB编辑器支持显示数学公式了
+
+【帖子正文】
+目前发现用LaTeX语法可以直接显示数学公式，比如我输入以下内容
+方程
+$$ax^2+bx+c=0(a \ne 0)$$
+有两个根，它们是$\displaystyle x_{1,2}=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$
+渲染的结果就是
+
+方程
+$$ax^2+bx+c=0(a \ne 0)$$
+有两个根，它们是$\displaystyle x_{1,2}=\frac{-b\pm\sqrt{b^2-4ac}}{2a}$
+
+小程序好像有一些问题，网页端暂时只发现了太多公式会崩溃的情况（测试专楼被我弄崩溃了）
+最起码能用了，以后线上解答数学题目方便一些了
+
+
+【精选回复】（共 1 条）
+
+
+--- 回复 1 ---
+[treehappy 的回答]
+$$bd=b+d$$
+$$
+\begin{equation}\label{eq2}
+	N_{j}^{1}(u)=\left\{
+	\begin{aligned}
+		1 & , & u_{j} \leq u < u_{j+1}\\
+		0 & , & u < u_{j}\,or \,u \geq u_{j+1}
+	\end{aligned}
+	\right.
+\end{equation}
+$$

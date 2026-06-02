@@ -1,0 +1,32 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】zju mirror的pip源似乎崩了
+
+【帖子正文】
+rt，昨天和今天都有这个问题，pip源默认用zju mirror下载时出现SSL证书错误，换源到清华源下载无误。
+https://file.cc98.org/v4-upload/d/2026/0403/hucbf5k0.webp
+https://file.cc98.org/v4-upload/d/2026/0403/hsi5rr0o.webp
+
+
+【精选回复】（共 4 条）
+
+
+--- 回复 1 ---
+[无名愚父 的回答]
+就是不太稳，校园网用清华源一般是最快的
+
+
+--- 回复 2 ---
+[mrhaoxx 的回答]
+看一下 hosts 有没有固定 mirrors.zju.edu.cn 的 ip，前段时间服务器迁移了
+
+
+--- 回复 3 ---
+[mrhaoxx 的回答]
+新 ip 是 10.202.236.97
+
+
+--- 回复 4 ---
+[mrhaoxx 的回答]
+内网dns是对的
+检查一下 /etc/hosts 有没有条目

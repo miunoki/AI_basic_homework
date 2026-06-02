@@ -1,0 +1,24 @@
+【来源】CC98论坛「个性生活」版块
+
+【标题】【教程】如何给室友手搓一把爱心键盘
+
+【帖子正文】
+原帖：【个性生活】耗时两个月 给室友做了一把何晨光的键盘 https://www.cc98.org/topic/6486358
+https://file.cc98.org/v4-upload/v/2026/0512/ofvk1gnf.mp4https://file.cc98.org/v4-upload/d/2026/0512/kekzyrrc.webp
+https://file.cc98.org/v4-upload/d/2026/0512/ofyfk1e2.webp
+
+原理图和PCB都已在立创开源上开源https://oshwhub.com/cecilia7178/small_keyboard，嘉立创可以领免费的PCB打样券，而且包邮，而且一次发5个，焊坏了也不怕。我的键盘就是卡着免费的10cm*10cm的尺寸做的。
+所用软件并不多https://file.cc98.org/v4-upload/d/2026/0512/d5bp45pw.webp
+元器件直接在淘宝购买，量大管饱，不过要注意封装尺寸，绝大部分是0805的，但有个别我设置错了，单独是0603的。
+焊接最痛苦的是type-c和芯片，需要热风枪和电烙铁轮番上阵，type-c甚至更加难焊，我焊废了5个。b站有很多焊接教程，大致学习即可。
+
+打好板子，焊好元件后，先用万用表测试其是否正常，然后与arduino uno连接烧录bootloader，我留了六个pin，且已标注VCC,GND,RES,SCLK,MOSI,MISO,不必担心分不清。具体可查看arduinoIDE的官方文档Arduino as ISP and Arduino Bootloaders | Arduino Documentationhttps://docs.arduino.cc/built-in-examples/arduino-isp/ArduinoISP/https://file.cc98.org/v4-upload/d/2026/0512/ky0a1ql2.webp
+
+烧录完成后，下载嘉立创的附件中的代码到电脑上，如果想要更改键位，需在代码编辑软件（VScode等）中更改，在D:\code\small_keyboard\small_keyboard\keymaps\default\keymap.c这个文件中更改，可查看QMK官方文档选择想要的键位和功能Building Your First Firmware | QMK Firmwarehttps://docs.qmk.fm/newbs_building_firmware
+https://file.cc98.org/v4-upload/d/2026/0512/4kxwxocg.webp
+
+将键盘与电脑连接，下载QMK MSYS，QMKToolbox，搭建QMK固件环境，刷固件。【QMK教程】二、打地基！键盘基础功能，了解各个文件用途，实战演示，看完会写QMK_哔哩哔哩_bilibilihttps://www.bilibili.com/video/BV1yA411R7Ky/?spm_id_from=333.788.videopod.sections&vd_source=7d21945aed1b3a5c029cb4cf0d9935bd
+
+这时候键盘基本的都有了，装上附件中的外壳（亚克里切割，文件名开头的数字是厚度，单位mm），将热熔螺母融进底层的亚克力孔，配六角铜柱，螺钉，装上“劈里啪啦”的轴，定制可爱的键帽，想更精致的话还可以装上夹心棉。
+
+祝大家的室友都能拥有爱心小键盘

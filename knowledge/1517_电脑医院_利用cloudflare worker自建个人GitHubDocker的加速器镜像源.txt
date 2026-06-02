@@ -1,0 +1,152 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】利用cloudflare worker自建个人GitHub/Docker的加速器/镜像源
+
+【帖子正文】
+## 为什么自建加速器？
+我们都知道国内网络在访问GitHub官网或拉取Docker镜像时经常会遇到网络不稳定的问题:
+* 对于GitHub，要么开梯子花流量，要么使用watt tookit这类工具（它会修改本地host文件、启动一个反代并伪造ssl证书，极易被浏览器识别为不安全并阻止访问），
+* 对于Docker，这几年阿里、腾讯等商用的镜像加速器纷纷停止向公众开放，直接使用清华等高校的镜像源或轩辕这种社区镜像是普遍的解决方案，但是仍有不稳定的情况。
+
+此时搭建一个个人的加速器就能同时解决成本和安全性，并带来稳定的访问速度。
+## 创建cloudflare worker并写入脚本
+* cloudflare worker和传统意义的虚拟主机（云服务器）不同，是一种现代的边缘计算技术（这里不详细说了，我们不需要了解它的原理，只是利用其轻量快速优势）
+* 得益于cloudflare免费账户能够创建最多30个 Worker脚本，并拥有10万次/天的请求上限（对个人而言绰绰有余），你只需要有一个cloudflare账户（前往(https://dash.cloudflare.com/)注册并登录，可绑定Google/GitHub账号）
+* 直接在“构建/计算/worker and pages”界面选择“创建应用程序”，如图：
+!(https://file.cc98.org/v4-upload/d/2026/0413/wvp3l5j5.webp)
+* 选择“从hello world开始”：
+!(https://file.cc98.org/v4-upload/d/2026/0413/rjif4bb0.webp)
+* 给你的worker起一个名字，如“github”或“docker”:
+!(https://file.cc98.org/v4-upload/d/2026/0413/fst2h5yx.webp)
+* 点击“编辑代码”：
+!(https://file.cc98.org/v4-upload/d/2026/0413/jdkis1ak.webp)
+* 对于GitHub加速器，粘贴以下代码（覆盖原来的内容）并保存：
+```JavaScript
+// 配置需要代理的域名
+const GITHUB_DOMAINS = ;
+
+// 代理主函数
+export default {
+ async fetch(request, env, ctx) {
+ const url = new URL(request.url);
+
+ // 处理根路径访问，返回简单说明
+ if (url.pathname === "/" && url.search === "") {
+ return new Response(`
+ <h1>GitHub 代理服务</h1>
+ <p>使用方法：在 GitHub 链接前加上本域名即可</p>
+ <p>示例：<br>
+ - https://${url.host}/github.com/username/repo<br>
+ - https://${url.host}/raw.githubusercontent.com/username/repo/branch/file
+ </p>
+ `, {
+ headers: { "Content-Type": "text/html;charset=utf-8" }
+ });
+ }
+
+ // 解析目标 URL
+ let targetUrl = url.pathname.slice(1) + url.search + url.hash;
+
+ // 自动补全协议
+ if (!targetUrl.startsWith("http")) {
+ // 检查是否是我们要代理的域名
+ const isGithubDomain = GITHUB_DOMAINS.some(domain => 
+ targetUrl.startsWith(domain)
+ );
+
+ targetUrl = isGithubDomain ? `https://${targetUrl}` : `https://github.com/${targetUrl}`;
+ }
+
+ try {
+ // 创建新的请求
+ const newRequest = new Request(targetUrl, {
+ method: request.method,
+ headers: request.headers,
+ body: request.body,
+ redirect: "manual"
+ });
+
+ // 发送请求并获取响应
+ const response = await fetch(newRequest);
+
+ // 处理重定向
+ if (response.redirected) {
+ const location = response.headers.get("Location");
+ if (location && GITHUB_DOMAINS.some(d => location.includes(d))) {
+ const newLocation = location.replace(/^https?:\/\//, `${url.protocol}//${url.host}/`);
+ return new Response(null, {
+ status: response.status,
+ headers: { ...response.headers, Location: newLocation }
+ });
+ }
+ }
+
+ // 构造响应，修改部分头信息
+ const headers = new Headers(response.headers);
+ headers.set("Access-Control-Allow-Origin", "*");
+
+ return new Response(response.body, {
+ status: response.status,
+ statusText: response.statusText,
+ headers: headers
+ });
+ } catch (e) {
+ return new Response(`代理错误: ${e.message}`, { status: 500 });
+ }
+ }
+};
+```
+* 对于docker镜像加速，前往worker社区维护的开源项目仓库(https://github.com/cmliu/CF-Workers-docker.io)，将“_worker.js”的完整JavaScript源码复制并粘贴到编辑器中
+* 保存后，点击“部署”即可
+!(https://file.cc98.org/v4-upload/d/2026/0413/lfkh2kyw.webp)
+，cloudflare会给你分配一个专属的worker域名，通常是`workername.username.workers.dev`
+
+## 使用你的专属加速器
+* 对于GitHub加速器，直接在GitHub连接前加上你的worker域名即可，如：
+```
+https://github.username.workers.dev/github.com/username/repo
+```
+*这里把前缀域名替换为你的真实域名*
+
+使用`git clone`命令时，也可以加上加速器地址：
+```bash
+git clone https://github.username.workers.dev/github.com/user/repo.git
+# 也可以替换远程仓库地址，如：
+git remote set-url origin https://github.username.workers.dev/your-username/your-repo.git
+```
+* 对于docker镜像加速器，可修改`daemon.json`中的镜像源配置：
+```json
+{
+ "registry-mirrors": 
+}
+# 注意，这里要把docker.username.workers.dev换成你的真实worker域名
+```
+---
+然后应该就能用了，个人体验还是比较稳定，唯一问题是GitHub只能浏览不能登录或注册，但平时访问公共仓库什么的还是很方便的。
+此外就是目前只有docker hub的registry mirror，apt源估计还是得用清华的🤣
+
+我自己还做了个简单的浏览器扩展，可以直接在本地的edge开发模式下加载，不用每次访问都手动加worker域名，大概是这样：
+!(https://file.cc98.org/v4-upload/d/2026/0413/2gpnsfam.webp)
+
+可以直接在(https://github.com/pirate-608/gh-accelerate)下载源代码并解压。
+开了以后可以劫持url并把加速器url塞到前面。
+
+---
+感谢楼下老哥提醒封号风险，我觉得有道理，提醒大家注意一下，最好自己用，不要分享，尤其是用docker加速器的时候不要频繁拉取大量镜像
+
+
+【精选回复】（共 2 条）
+
+
+--- 回复 1 ---
+[寸铁 的回答]
+建议不要用大号，加速/反代用途的worker，尤其大量使用，存在被cf以滥用封禁账户的情况
+
+
+--- 回复 2 ---
+[寸铁 的回答]
+以下是引用6楼：用户无名愚父在2026-04-13 15:52:36的发言：>>查看原帖<<
+以下是引用5楼：用户寸铁在2026-04-13 15:51:19的发言：>>查看原帖<<
+建议不要用大号，加速用途的worker存在被cf以滥用封禁账户的情况
+这样啊，只自己用也会被封号吗
+不一定，但是提示一下存在这个风险

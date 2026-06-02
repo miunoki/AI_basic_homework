@@ -1,0 +1,398 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】教程：抛弃aTrust，校外无感访问校内网站资源，同时实现「科学上网」与「校内资源访问」，使用ClashVerge+ZJU-Connect智能分流
+
+【帖子正文】
+## 写在前面
+
+### 使用场景
+
+暑假在家，在校外的时候，我们经常需要访问校内服务器和资源，同时也需要使用代理访问国际学术网站，传统的方案一般是是使用 RVPN 客户端，但与现有代理冲突，需要来回切换，非常繁琐，并且很多情况下关掉代理，会导致某些网站检测到你的真实IP，到时账号被ban（比如Claude、Gemini这些不对大陆提供服务的网站）
+
+本教程提供一个**优雅的解决方案**：通过 `zju-connect` 和 `Clash Verge`，实现**智能分流**，让校内外资源访问无缝切换。
+
+首先先感谢前辈们的对于这个主题的贡献：
+本帖主要参考(https://www.cc98.org/topic/6354673)来撰写，感谢大佬D2_m的探索🥹，但是苦于没钱买Surge的授权，再加日常使用ClashVerge偏多，以及前人并未将完整的教程整合，且某些脚本存在一点点小小的错误和不可用的地方，所以想着在前人的基础上完善一下教程。
+
+(https://github.com/Mythologyli/zju-connect)
+
+(https://www.cc98.org/topic/6268414)
+
+(https://www.cc98.org/topic/6354673)
+
+还要感谢Claude AI的协助，本文有一定篇幅借助Claude撰写，笔者对内容AI撰写的内容进行了修改与审查。
+
+本教程主要在前辈的基础上，更正了些许错误，细化了操作，增加了Clash Verge的分流策略配置。
+
+### 最终效果
+
+最终效果差不多是这样的
+
+```
+开机后自动：
+```
+- **1**：zju-connect 连接到校内 VPNClash Verge 根据规则自动分流
+- **2**：访问 CC98、教务系统等 → 走 zju-connect → 校内网络
+- **3**：访问 Google、GitHub、Claude 等 → 走国际代理
+- **4**：个人网站、国内网站 → 直连
+
+### 整体架构
+
+```
+你的应用程序（浏览器/终端等）
+ ↓
+Clash Verge (系统代理)
+ ↓ (根据规则分流)
+ ├─→ zju-connect (127.0.0.1:21080)
+ │ ↓
+ │ 浙大 VPN 服务器
+ │ ↓
+ │ 校内资源 (*.zju.edu.cn, 10.x.x.x)
+ │
+ └─→ 其他代理节点
+ ↓
+ 国际网站 (Google/GitHub/Claude)
+```
+
+---
+
+## 准备工作
+
+### 系统要求
+
+- macOS 10.15+（我用的是macos），但是其他操作系统整体思路一致。
+- 浙大统一身份认证账号
+
+### 需要的软件
+
+1. **zju-connect** - 校内 VPN 客户端
+ 
+ - 下载地址: (https://github.com/Mythologyli/zju-connect/actions/workflows/build.yml?query=branch%3Aatrust)
+2. **Clash Verge** - 代理客户端
+ 
+ - 下载地址: https://github.com/clash-verge-rev/clash-verge-rev/releases
+ - 其他 Clash 客户端也可以，配置方法类似
+3. **代理订阅**
+ 
+ - 任何支持 Clash 的机场订阅
+ - 或自建代理服务器
+
+### 目录结构准备
+
+```bash
+# 创建工作目录
+mkdir -p ~/zju-connect/tmp
+cd ~/zju-connect
+```
+
+---
+
+## 安装配置 zju-connect
+
+### 第一步：下载 zju-connect
+
+1. 访问 (https://github.com/Mythologyli/zju-connect/actions/workflows/build.yml?query=branch%3Aatrust)
+2. 选择 `atrust` 分支的最新构建
+3. 下载对应版本：
+ 
+ - **Mac M 系列芯片**：(https://github.com/Mythologyli/zju-connect/actions/runs/18283178062/artifacts/4233238125)
+ - **Mac Intel 芯片**：`(https://github.com/Mythologyli/zju-connect/actions/runs/18283178062/artifacts/4233238192)
+ - **WinX86**：(https://github.com/Mythologyli/zju-connect/actions/runs/18283178062/artifacts/4233238085)
+4. 解压并移动到工作目录：
+
+```bash
+cd ~/zju-connect
+mv ~/Downloads/zju-connect-darwin-arm64 ./zju-connect
+chmod +x zju-connect
+```
+
+### 第二步：下载验证码处理脚本
+
+创建 `~/zju-connect/tmp/point_picker.py`，有两个版本可选：
+
+#### 版本 A：带图形界面（需要 tkinter 和 PIL）
+
+point_picker.py下载链接：
+(https://alist.x0bang.com/d/LocalDisk/%E6%96%87%E4%BB%B6%E5%88%86%E4%BA%AB/98/point\_picker.py?sign=j2CNRWJPluB5D8MTBjPcGZbQRtdvUyshbJ9AwNaoBac=:0)
+
+```python
+import tkinter as tk
+from PIL import Image, ImageTk
+from io import BytesIO
+
+def pick_points(image_buffer, num_points=3, display_width=800):
+ img = Image.open(BytesIO(image_buffer))
+ orig_width, orig_height = img.width, img.height
+
+ scale = orig_width / display_width
+ new_size = (int(orig_width / scale), int(orig_height / scale))
+ img = img.resize(new_size)
+
+ root = tk.Tk()
+ tk_img = ImageTk.PhotoImage(img)
+ canvas = tk.Canvas(root, width=img.width, height=img.height)
+ canvas.pack()
+ canvas.create_image(0, 0, anchor="nw", image=tk_img)
+
+ coordinates = []
+
+ def on_click(event):
+ x = int(event.x * scale)
+ y = int(event.y * scale)
+ canvas.create_oval(
+ event.x - 5, event.y - 5, event.x + 5, event.y + 5, fill="red"
+ )
+ coordinates.append()
+ print()
+ if len(coordinates) >= num_points:
+ root.after(1000, root.destroy)
+
+ canvas.bind("<Button-1>", on_click)
+ root.mainloop()
+
+ return {"coordinates": coordinates, "width": orig_width, "height": orig_height}
+
+if __name__ == "__main__":
+ with open("../CheckCode.jpg", "rb") as f:
+ image_buffer = f.read()
+ result = pick_points(image_buffer, num_points=3)
+ import json
+ print(json.dumps(result, separators=(",", ":")))
+```
+
+#### 版本 B：简化版
+
+```python
+import os, json, subprocess
+
+def show_image(path):
+ os.system(f"open {path}")
+ return path
+
+def get_size(path):
+ out = subprocess.run(,
+ capture_output=True, text=True).stdout
+ w = int( for l in out.splitlines() if "pixelWidth" in l])
+ h = int( for l in out.splitlines() if "pixelHeight" in l])
+ return w, h
+
+def pick_points(n, w, h):
+ print("提示：左上角为(0,0)，横为x，竖为y")
+ print("使用预览的矩形选框工具，左下角会显示坐标")
+ coords = for i in range(n)]
+ return {"coordinates": coords, "width": w, "height": h}
+
+if __name__ == "__main__":
+ path = "../CheckCode.jpg"
+ show_image(path)
+ w, h = get_size(path)
+ res = pick_points(3, w, h)
+ print(json.dumps(res, separators=(",", ":")))
+```
+
+**版本 B 使用方法：**
+
+1. 脚本会自动打开验证码图片
+2. 在预览中使用「工具」→「矩形选框」
+3. 框选目标位置，左下角会显示坐标
+4. 依次输入 3 个点的 x 和 y 坐标
+
+### 第三步：创建配置文件
+
+配置文件下载链接：
+(https://alist.x0bang.com/d/LocalDisk/%E6%96%87%E4%BB%B6%E5%88%86%E4%BA%AB/98/config.toml?sign=KZDpYmLyfK2KLT01jPzRLmW2-J8J\_kEjAJFhZZBaw90=:0)
+
+创建 `~/zju-connect/tmp/config.toml`：
+
+```toml
+username = "你的学号"
+password = '你的VPN密码'
+protocol = "atrust"
+graph_code_file = "CheckCode.jpg"
+client_data_file = "clientData.json"
+
+# Advanced settings
+server_address = "vpn.zju.edu.cn"
+server_port = 443
+disable_server_config = false
+disable_zju_config = false
+disable_zju_dns = false
+disable_multi_line = false
+proxy_all = false
+socks_bind = ":21080"
+socks_user = ""
+socks_passwd = ""
+http_bind = ":28888"
+shadowsocks_url = ""
+dial_direct_proxy = ""
+tun_mode = false
+add_route = false
+dns_ttl = 3600
+disable_keep_alive = false
+zju_dns_server = "10.10.0.21"
+secondary_dns_server = "114.114.114.114"
+dns_server_bind = ""
+dns_hijack = false
+debug_dump = false
+
+port_forwarding = []
+custom_dns = []
+custom_proxy_domain = []
+```
+
+**注意事项：**
+
+- 密码如果包含特殊字符（如 `!`），建议使用单引号包裹：`password = '密码'`
+- SOCKS5 代理端口为 `21080`，HTTP 代理端口为 `28888`
+
+### 第四步：首次运行
+
+```bash
+cd ~/zju-connect
+./zju-connect -config tmp/config.toml
+```
+
+**操作流程：**
+
+1. zju-connect 会下载验证码图片 `CheckCode.jpg`
+2. 看到 `Please enter the graph check code JSON:` 提示后
+3. 迅速打开一个**新终端**
+4. 在**新终端**快速运行，必须要快速完成，在 1-2 分钟内就会失效的：
+ ```bash
+ cd ~/zju-connect/tmp
+ python point_picker.py
+ ```
+5. 在弹出的窗口中点击验证码的 3 个目标位置
+6. 终端会输出 JSON 格式的坐标，**立即复制**整行
+7. 粘贴到运行 zju-connect 的终端，按回车
+8. 输入手机收到的短信验证码
+9. 看到 `KeepAlive using TCP: OK` 表示连接成功
+
+**重要提示：**
+
+- 验证码有效期很短，操作要快！
+- 建议提前打开两个终端窗口准备好命令
+
+### 第五步：验证连接
+
+```bash
+# 测试 SOCKS5 代理
+curl -x socks5://127.0.0.1:21080 http://cc98.org
+
+# 测试 HTTP 代理
+curl -x http://127.0.0.1:28888 http://cc98.org
+```
+
+如果返回 CC98 的 HTML 内容或 301 重定向，说明连接成功！
+![](https://file.cc98.org/v4-upload/d/2025/1215/pikjl2iw.webp)
+
+**首次登录成功后，会在 `~/zju-connect` 目录下生成 `clientData.json`，下次运行时会自动登录，无需再输入验证码！**
+
+### 第六步：测试自动重连
+
+```bash
+# 按 Ctrl+C 停止 zju-connect
+# 然后重新启动
+cd ~/zju-connect
+./zju-connect -config tmp/config.toml
+```
+
+应该看到：
+
+```
+Using saved client data
+Login successful!
+SOCKS5 proxy listening on 127.0.0.1:21080
+KeepAlive using TCP: OK
+```
+
+自动登录成功！
+
+
+【精选回复】（共 13 条）
+
+
+--- 回复 1 ---
+[BeeeTles 的回答]
+bd，之前就想过怎么做自动分流
+
+
+--- 回复 2 ---
+[微积分渣渣 的回答]
+cy 
+等我寒假再回来看这个帖子
+
+
+--- 回复 3 ---
+[BoJack 的回答]
+cy 为啥我一直是clash和vpn同时开，没学过这些复杂的方法。一年了没被ban过
+
+
+--- 回复 4 ---
+[BoJack 的回答]
+以下是引用8楼：用户立立斯在2025-12-15 18:59:39的发言：>>查看原帖<<
+以下是引用7楼：用户BoJack在2025-12-15 18:56:26的发言：>>查看原帖<<
+cy 为啥我一直是clash和vpn同时开，没学过这些复杂的方法。一年了没被ban过
+🤔感觉一般来说，两个系统代理是不能同时存在的，同时开的话可能只有一个代理了流量，只能生效一个吧
+我不清楚诶……不知道为什么可以
+我就一边开gemini一边上cc98，在旅游的酒店玩得不亦乐乎
+
+
+--- 回复 5 ---
+[阿达西 的回答]
+好复杂不过我好像没遇到过这种，clash里面加了一条zju.edu.cn的绕过就可以同时用了（用的还是easyconnect)
+
+电脑之间亦有差距啊
+
+
+--- 回复 6 ---
+[cmd_pig 的回答]
+不懂啊，我win11上的clash verge不大行，是不是有的机场只允许配置文件只读的原因
+https://file.cc98.org/v4-upload/d/2025/1216/hlsamio4.log
+
+
+--- 回复 7 ---
+[cmd_pig 的回答]
+以下是引用15楼：用户立立斯在2025-12-17 10:34:14的发言：>>查看原帖<<
+>**以下是引用14楼：用户cmd_pig在2025-12-16 22:24:19的发言：**
+不懂啊，我win11上的clash verge不大行，是不是有的机场只允许配置文件只读的原因
+https://file.cc98.org/v4-upload/d/2025/1216/hlsamio4.log
+
+```
+
+prepend-proxies:
+ # 添加 zju-connect 节点
+ - name: " ZJU校内"
+ type: socks5
+ server: 127.0.0.1
+ port: 21080
+```
+不好意思之前的配置文件有点小错误，
+这里多了个空格。
+
+请把这一段这里试着改成
+
+```
+ # 添加 zju-connect 节点
+ - name: "ZJU校内"
+ type: socks5
+ server: 127.0.0.1
+ port: 21080
+```
+应该就没问题了
+好的，感谢
+
+
+--- 回复 8 ---
+[Conscient 的回答]
+bdbd（虽然我用Clash Party+WebVPN）
+
+
+--- 回复 9 ---
+[桥影 的回答]
+bdbd，成功分流感谢！
+
+
+--- 回复 10 ---
+[股票大作手 的回答]
+最新版本的clash verge的全局配置文件在订阅页面
