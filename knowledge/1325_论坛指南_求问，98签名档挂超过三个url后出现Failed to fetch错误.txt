@@ -1,8 +1,0 @@
-【来源】CC98论坛「论坛指南」版块
-
-【标题】求问，98签名档挂超过三个url后出现Failed to fetch错误
-
-【帖子正文】
-rt，在签名档挂超过三个url后提交修改就出错
-https://file.cc98.org/v4-upload/d/2025/0626/5qos1kah.webp
-https://file.cc98.org/v4-upload/d/2025/0626/hzexyhum.webp
