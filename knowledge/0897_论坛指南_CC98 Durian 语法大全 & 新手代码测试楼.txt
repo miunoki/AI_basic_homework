@@ -1,0 +1,548 @@
+【来源】CC98论坛「论坛指南」版块
+
+【标题】CC98 Durian 语法大全 & 新手代码测试楼
+
+【帖子正文】
+# 首楼索引
+
+- 概述
+(/topic/4759491/1#2 "概述 & FAQ & 官方文档与资源")
+
+- UBB部分
+(/topic/4759491/1#3 "UBB部分 语法说明")
+(/topic/4759491/1#4 "UBB部分 效果展示")
+> 由于编辑器能力限制，语法说明与具体的效果将会分别展示
+
+- Markdown部分
+(/topic/4759491/1#5 "MD部分")
+
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+
+###可在本主题贴下测试代码或询问Durian相关的内容
+官方咨询邮箱：contact@cc98.org
+
+> 本帖整理了目前官方推荐的可用语法。详情可查询Durian的前端在GitHub中的开源代码 https://github.com/ZJU-CC98/Forum
+
+> 由于网站的建设与完善仍在进行，所以当语法有更新时会及时同步。
+
+> 感谢大家对CC98 Durian的关心与支持！
+
+> —————————————————— CC98运营管理团队 编辑部 2018.3
+
+
+【精选回复】（共 19 条）
+
+
+--- 回复 1 ---
+[Fantine 的回答]
+#概述
+论坛采用原生UBB语法系统，在发帖回帖时可切换至第三方Markdown编辑模式。
+目前两种模式可任意切换。
+![](http://file.cc98.org/v2-upload/jh2vxhwx.gif)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+
+#FAQ
+
+###如何@其他用户
+输入“**@+用户名+空格**”即可@对应ID的用户。
+单独一帖最多十个有效@用户。
+只有在一个帖子第一次发布时的@对象才会收到提示，编辑后不会再有新的提示。
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###私信与签名档
+```私信```可在用户发帖回帖的楼层或用户的个人主页中点击私信按钮，进入与该用户私信模式。
+
+```签名档```可在个人中心 - 修改资料界面修改自己的签名档，签名档将被显示在个人主页与用户的所有帖子的底部。
+
+私信与签名档均采用论坛原生的UBB语法。
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###风评系统
+可通过点击帖子右下角的“评分”按钮对某个帖子进行评分，进行评分操作有500帖数的要求，每个ID每天能进行一次评分操作。
+请勿滥用风评系统！发现恶意刷风评现象请前往“(http://www.cc98.org/list/17 "论坛事务")”版面及时举报，请不要相互伤害！
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###如何回复单个楼层 / 如何查看他人帖子的代码
+可通过点击帖子右下角的“引用”按钮并编辑发布引用该帖内容，内容发布后被引用的用户将收到回复提示。论坛中不能直接评论。
+
+通过引用，可查看对应帖子的发帖代码。
+说明：点击引用按钮，编辑器会将原帖代码套上引用标签后换行。
+```code```**原帖代码**
+
+当被引用帖子为Markdown模式时，官方推荐在引用标签中加入md标签，具体请参考UBB语法说明中对md标签的说明。
+```code```**原Markdown模式代码**
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###如何修改自己发布的内容
+可通过点击帖子右下角的“编辑”按钮修改已发布的帖子内容，帖子中会显示最后一次编辑的用户与时间信息。
+如有移动或删除帖子的需求，请与版主或论坛的其他管理人员联系。
+**注意：交易版面有发表主题的最低帖数要求，结束交易后请保留原商品信息！**
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+
+#部分官方文档
+(/topic/3496712 "CC98论坛章程")
+
+(/topic/4673335 "首页推荐阅读投稿")
+
+(/topic/4569003 "社团及学生组织用户认证申请")
+
+(/topic/4668187 "广播台点歌通道")
+
+(/topic/4310602 " 教师答疑区版主申请和版面开设流程")
+
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+
+#资源
+(/list/315 "98网事") - (/topic/4728203 "【科普】98里的各种黑话含义")
+
+(/list/25 "天籁之音") - 如何分享第三方平台音乐至论坛](/topic/4761370 "如何分享第三方平台音乐至论坛")
+
+(/list/235 "求职广场") - 坑害学生利益的公司耻辱柱](/topic/4719145 "坑害学生利益的公司耻辱柱")
+
+(/list/100 "校园信息") - 维权参考贴汇总楼](/topic/4750513 "维权参考贴汇总楼")
+
+(/list/100 "校园信息") - 全站各种有用小攻略整合帖](/topic/4754055 "全站各种有用小攻略整合帖")
+
+
+--- 回复 2 ---
+[Fantine 的回答]
+#UBB部分 - 语法说明
+UBB编辑器为论坛发帖的默认编辑器，使用标签式语法，格式如下：
+![](http://file.cc98.org/v2-upload/5dnansfd.jpg)
+多个开闭标签嵌套需按顺序正确闭合，如：
+![](http://file.cc98.org/v2-upload/crltfuq2.jpg)
+
+以下对目前支持的标签进行列举与语法说明，由于编辑器能力限制，具体的效果展示将会放在本主题贴4L（即lx）
+> 详情可查询Durian的前端在GitHub中的开源代码 https://github.com/ZJU-CC98/Forum
+
+![](http://file.cc98.org/v2-upload/1b2u3bdb.png)
+##Part 1 - 编辑器工具栏
+![](http://file.cc98.org/v2-upload/ubnon0kj.png)
+UBB编辑器顶部自带工具栏。
+当需要编辑某段文本的格式时，可选中文本后单击对应的工具，编辑器即会自动为选中文字段落添加标签。
+当需要添加表情时，直接在工具栏中选择对应表情即可添加
+
+![](http://file.cc98.org/v2-upload/goujgs1p.jpg)
+`code`加粗内容
+`demo`**加粗内容**
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/nvngnfuj.jpg)
+`code`斜体内容
+`demo`*斜体内容*
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/t0c4v0gr.jpg)
+`code`下划线内容
+`demo`![](http://file.cc98.org/v2-upload/p25rujq4.jpg)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/x3c4i4ds.jpg)
+`code`删除线内容
+`demo`~~删除线内容~~
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/e1vmvbfe.jpg)
+`code`工具栏默认左对齐标签
+`code`同时被论坛支持的左对齐标签
+`code`工具栏默认居中显示内容
+`code`同时被论坛支持的居中显示标签
+`code`工具栏默认右对齐内容
+`code`同时被论坛支持的右对齐标签
+`demo`
+![](http://file.cc98.org/v2-upload/gtp5ilyj.jpg)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/bm1omnj2.jpg)
+`code`请注意，如果1楼有回复可见标签，该主题将不会进入热门话题（十大）
+`demo`此处为回复后的展示效果，如未回复则不会显示标签中的内容
+![](http://file.cc98.org/v2-upload/1lux4vas.jpg)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/g4bij0zz.jpg)
+字号大小为1~7，1最小，7最大，默认字体大小在3-4之间。
+`code`1号大小字
+`code`2号大小字
+`code`3号大小字
+`code`默认大小字
+`code`4号大小字
+`code`5号大小字
+`code`6号大小字
+`code`7号大小字
+`demo`
+![](http://file.cc98.org/v2-upload/bjtrtdbf.jpg)![](http://file.cc98.org/v2-upload/eibgouhg.jpg)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/3atgkffp.jpg)
+![](http://file.cc98.org/v2-upload/shabi10f.jpg)
+可用颜色选择器直接取色；也可使用颜色名称，如；或使用颜色代码，如。
+`code`orange
+`code`color=#989898
+`demo`
+![](http://file.cc98.org/v2-upload/s30wqvxt.jpg)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/h3rf0lt1.jpg)
+![](http://file.cc98.org/v2-upload/uxhmsljh.jpg)
+直接点击选中的表情即可
+`code`
+`demo`![](http://file.cc98.org/v2-upload/i5hd2guz.gif)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/aoqrccnj.jpg)
+帖子中直接加入的超链接可以被自动识别
+`code`www.cc98.org
+`demo`(http://www.cc98.org "www.cc98.org")
+
+也可对帖子中的图文内容加入超链接
+`code`My CC98, My Home
+`demo`(http://www.cc98.org "My CC98, My Home")
+![](http://file.cc98.org/v2-upload/selyqdlu.gif)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/cc1lwn2l.jpg)
+可直接上传图片，也可使用已有的图片链接添加标签
+`code`http://file.cc98.org/uploadfile/2017/12/19/23532126085.png 
+
+也可选择隐藏图片，将其设置为点击可见
+`code`http://file.cc98.org/uploadfile/2017/12/19/23532126085.png 
+`demo`
+![](http://file.cc98.org/v2-upload/svxnmzux.jpg)
+> 动态展示效果请见4L（即lx）
+
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/emoorzz3.jpg)
+目前在论坛内直接上传视频的大小限制为5M，推荐使用稳定的第三方外链
+`code`http://file.cc98.org/v2-upload/zuswybvo.mp4
+`demo`
+![](http://file.cc98.org/v2-upload/b20w3f2j.jpg)
+> 动态展示效果请见4L（即lx）
+
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/ubjjjsex.jpg)
+音频文件推荐直接上传至论坛，也可使用稳定的第三方外链
+`code`http://lzscuw.changba.com/987147509.mp3 
+`demo`
+![](http://file.cc98.org/v2-upload/fu4absza.jpg)
+> 动态展示效果请见4L（即lx）
+
+> 关于 (/list/25 "天籁之音") 版面的音乐上传，请参考 (/topic/4761370 "【教程】如何分享第三方平台音乐至论坛")
+
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+![](http://file.cc98.org/v2-upload/yxkezdvh.jpg)
+可直接上传文件，同时也有5M的大小限制。
+目前可识别部分图像文件(jpg jpeg png bmp webp)并直接转换为图像标签。当upload标签中的链接目标被识别为图像时，根据第二个参数判断是否直接显示图像
+`code`http://file.cc98.org/uploadfile/2017/12/19/23532126085.png 
+`code`http://file.cc98.org/uploadfile/2017/12/19/23532126085.png 
+对于其他文件，将直接展示文件的可跳转链接
+`code`http://file.cc98.org/v2-upload/1q3vv2tz.json 
+> 动态展示效果请见4L（即lx）
+
+![](http://file.cc98.org/v2-upload/1b2u3bdb.png)
+
+##Part 2 - 其他标签
+
+####引用标签
+在UBB模式下引用其他帖子（点击要引用帖子右下角的引用按钮）时会为原帖内容自动套上引用标签，并加入编辑器，此时光标在所有内容后另起一行。
+`code`引用内容
+`demo`
+![](http://file.cc98.org/v2-upload/wlbob5xw.jpg)
+> 当引用层数嵌套过多时建议挑选删除一些冗余的信息，请注意标签的对称
+
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+####Markdown标签
+在UBB模式的帖子中插入Markdown块，可在其中使用Markdown语法
+`code`Some md sentences here...
+
+`Tip`当想要引用的内容为Md模式的帖子时，可在quote标签内手动添加md标签，还原原帖格式 最后呈现形式为：
+```
+...(原帖内容)...
+...(你的回复内容)...
+```
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+####分割线
+为单独标签，没有开闭，可直接使用
+`code`
+`demo`
+
+------
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+####代码段标签
+`code`
+your code here
+line 1
+line 2
+end
+`demo`
+![](http://file.cc98.org/v2-upload/yqc2itqs.jpg)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+####字体标签（待补充）
+根据浏览器不同有不同的可选字体范围，对应可参考(https://blog.csdn.net/u013076044/article/details/47979333 "Css font-family字体对照表")
+`code`黑体示范
+`code`仿宋示范
+`demo`
+![](http://file.cc98.org/v2-upload/5bpmq1yg.jpg)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+####表格标签
+表格标签有table表格, th表头, tr行, td单元，具体用法课参照网页中的用法或官方示例代码
+`code`
+```
+
+ Character Title Motto 
+ 
+ Welson 
+ The Gentleman Scientist 
+ I'll conquer it all with the power of my MIND! 
+ 
+ 
+ Willow 
+ The Firestarter 
+ Things are so much prettier when they burn. 
+ 
+ 
+ Wendy 
+ The Bereaved 
+ Abigail?Come back!I'm not done playing with you. 
+ 
+
+```
+`demo`
+![](http://file.cc98.org/v2-upload/ctsoy01m.jpg)
+
+
+--- 回复 3 ---
+[Fantine 的回答]
+#UBB部分 - 语法效果展示
+本楼为ls语法说明的演示部分，具体用法请参照ls
+Tips：可点击帖子右下角“引用”按钮查看代码
+http://file.cc98.org/v2-upload/goujgs1p.jpg
+　　加粗内容
+
+http://file.cc98.org/v2-upload/nvngnfuj.jpg
+　　斜体内容
+
+http://file.cc98.org/v2-upload/t0c4v0gr.jpg
+　　下划线内容
+
+http://file.cc98.org/v2-upload/x3c4i4ds.jpg
+　　删除线内容
+
+http://file.cc98.org/v2-upload/e1vmvbfe.jpg
+工具栏默认左对齐标签同时被论坛支持的左对齐标签工具栏默认居中显示内容同时被论坛支持的居中显示标签工具栏默认右对齐内容同时被论坛支持的右对齐标签
+
+http://file.cc98.org/v2-upload/bm1omnj2.jpg
+　　
+
+http://file.cc98.org/v2-upload/g4bij0zz.jpg
+　　1号大小字
+　　2号大小字
+　　3号大小字
+　　默认大小字
+　　4号大小字
+　　5号大小字
+　　6号大小字
+　　7号大小字
+
+http://file.cc98.org/v2-upload/3atgkffp.jpg
+　　可用颜色选择器直接取色；也可使用颜色名称，如；或使用颜色代码，如。
+　　orange
+　　color=#989898
+
+http://file.cc98.org/v2-upload/h3rf0lt1.jpg
+　　直接点击选中的表情即可
+　　
+
+http://file.cc98.org/v2-upload/aoqrccnj.jpg
+　　帖子中直接加入的超链接可以被自动识别
+　　www.cc98.org
+　　也可对帖子中的图文内容加入超链接
+　　My CC98, My Home
+http://file.cc98.org/v2-upload/selyqdlu.gif
+
+http://file.cc98.org/v2-upload/cc1lwn2l.jpg
+　　可直接上传图片，也可使用已有的图片链接添加标签
+　　http://file.cc98.org/uploadfile/2017/12/19/23532126085.png
+　　也可选择隐藏图片，将其设置为点击可见
+　　http://file.cc98.org/uploadfile/2017/12/19/23532126085.png
+
+http://file.cc98.org/v2-upload/emoorzz3.jpg
+　　目前在论坛内直接上传视频的大小限制为5M，推荐使用稳定的第三方外链
+http://file.cc98.org/v2-upload/zuswybvo.mp4
+
+http://file.cc98.org/v2-upload/ubjjjsex.jpg
+　　音频文件推荐直接上传至论坛，也可使用稳定的第三方外链
+　　http://lzscuw.changba.com/987147509.mp3
+音乐：@断了弦的琴 
+关于 天籁之音 版面的音乐上传，请参考 【教程】如何分享第三方平台音乐至论坛
+
+http://file.cc98.org/v2-upload/yxkezdvh.jpg
+　　可直接上传文件，同时也有5M的大小限制。
+　　目前可识别部分图像文件(jpg jpeg png bmp webp)并直接转换为图像标签。当upload标签中的链接目标被识别为图像时，根据第二个参数判断是否直接显示图像
+　　http://file.cc98.org/uploadfile/2017/12/19/23532126085.png
+　　http://file.cc98.org/uploadfile/2017/12/19/23532126085.png
+　　对于其他文件，将直接展示文件的可跳转链接
+　　http://file.cc98.org/v2-upload/1q3vv2tz.json
+
+引用标签
+　　在UBB模式下引用其他帖子时会自动套上引用标签，并加入编辑器，此时光标在所有内容后另起一行。
+引用内容
+
+Markdown标签
+　　在UBB模式的帖子中插入Markdown块，可在其中使用Markdown语法
+Some md sentences here...
+Tips：当想要引用的内容为Md模式的帖子时，可在quote标签内手动添加md标签，还原原帖格式
+
+分割线
+　　为单独标签，没有开闭，可直接使用
+
+代码段标签
+your code here
+line 1
+line 2
+end
+
+字体标签
+　　根据浏览器不同有不同的可选字体范围，对应可参考Css font-family字体对照表
+　　黑体示范
+　　仿宋示范
+
+表格标签
+　　表格标签有table表格, th表头, tr行, td单元，具体用法可参照网页中的用法或官方示例代码
+
+ Character Title Motto 
+ 
+ Welson 
+ The Gentleman Scientist 
+ I'll conquer it all with the power of my MIND! 
+ 
+ 
+ Willow 
+ The Firestarter 
+ Things are so much prettier when they burn. 
+ 
+ 
+ Wendy 
+ The Bereaved 
+ Abigail?Come back!I'm not done playing with you.
+
+
+--- 回复 4 ---
+[Fantine 的回答]
+#Markdown部分
+目前发帖时的Markdown编辑器采用第三方解析，由于网络上有许多Markdown语法的参考与说明，以下只对效果做出展示，可通过引用查看本帖代码。
+
+###加粗
+**加粗效果**
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###删除线
+~~删除线效果~~
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###斜体
+*斜体效果*
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###引用
+> 引用效果
+
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###行内代码
+`行内代码展示`
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###代码段
+```
+// A '.tsx' file enables JSX support in the TypeScript compiler, 
+// for more information see the following page on the TypeScript wiki:
+// https://github.com/Microsoft/TypeScript/wiki/JSX
+import * as React from 'react';
+import * as Ubb from './Core';
+
+/**
+ * 处理 标签的处理器。
+ */
+export class DelTagHandler extends Ubb.RecursiveTagHandler {
+	get supportedTagNames(): string {
+		return 'del';
+	}
+
+	execCore(innerContent: React.ReactNode, tagData: Ubb.UbbTagData, context: Ubb.UbbCodeContext): React.ReactNode {
+ const style = {
+ textDecoration: 'line-through'
+ };
+
+ return <span style={style}>{innerContent}</span>;
+	}
+}
+```
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###标题
+#H1
+##H2
+###H3
+####H4
+#####H5
+######H6
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###分割线展示
+------
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###无序列表展示
+- item1
+- item2
+列表下附加说明项
+- item3
+- a long sentence.关于 98 的管理体系……欢迎大家来 98 的全员大会围观各路管理员（笑）~嗯，简单介绍一下的话，98 除了站长之外，还有站务组，技术组，体育部，策划部，编辑部，影音部，办公室几个部门，分别负责不同方面的工作，总人数的话大概三十人左右的样子~而且大家都是学生~都是学生~都是学生~重要的话说三遍~，所有人都是自愿报名加入的~没有什么奇奇怪怪的竞选演讲啦~大家平时也会一起玩耍什么的~
+
+###有序列表展示
+1.	嗯
+~~UknowWho~~
+2.	日经帖也出大新闻 - 鼓起勇气去怼占座的人后被围攻？
+3.	2016年末大戏 - 谁动了我的发票？
+4.	Are you kidding - 浙大果然是过于文气书卷气了
+5.	关于浙大120周年校庆的讨论
+6.	学生节欢乐校庆夜 - 抢票领票才有资格看吗？
+7.	浙大“保安”形象：男神 VS 恶霸
+8.	感冒发烧夜间去急诊遭值班医生恶语相向 - 是医生素质低，还是学生不明理？
+9.	该不该因为家境悬殊和相恋多年的男友分手？
+10.	男朋友：生孩子对女孩子身体是极好的，不接受不想要孩子的想法
+
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###设置超链接
+![](http://file.cc98.org/v2-upload/ttqjntkd.jpg)
+![](http://file.cc98.org/v2-upload/yzw14bff.jpg)
+(http://www.cc98.org "CC98 Durian")
+
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###上传图片
+![](http://file.cc98.org/v2-upload/fc1hlaii.jpg)点击即可选择图片上传
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###为图片设置超链接
+(http://file.cc98.org/v2-upload/0j5k3dki.jpg)](http://www.cc98.org)
+![](http://file.cc98.org/v2-upload/pxca0o3h.jpg)
+![](http://file.cc98.org/v2-upload/jeyrixdl.png)
+###表格
+![](http://file.cc98.org/v2-upload/kkspapjz.jpg)
+
+| Character | Title | Motto |
+| ------------ | ------------ | ------------ |
+| Welson | The Gentleman Scientist | I'll conquer it all with the power of my MIND! |
+| Willow | The Firestarter | Things are so much prettier when they burn. |
+| Wendy | The Bereaved | Abigail?Come back!I'm not done playing with you. |
+
+
+--- 回复 5 ---
+[中文可以吗 的回答]
+474661/p=100
+https://www.bilibili.com/video/av474661/?p=100
+
+
+--- 回复 6 ---
+[xinye 的回答]
+https://v.youku.com/v_show/id_XMzc3OTk1MDAzMg==.html?spm=a2hww.11359951.m_26676.5~5!2~5~5~5!4~5~5~A
+
+
+--- 回复 7 ---
+[xinye 的回答]
+http://player.youku.com/player.php/sid/XMzc3OTk1MDAzMg==/v.swf
+
+
+--- 回复 8 ---
+[xinye 的回答]
+http://player.youku.com/player.php/sid/XMzc3OTk1MDAzMg==/v.swf
+
+
+--- 回复 9 ---
+[罔闻犬 的回答]
+http://player.youku.com/player.php/sid/XMzc3OTk1MDAzMg==/v.swf
+
+
+--- 回复 10 ---
+[罔闻犬 的回答]
+http://player.youku.com/player.php/sid/XMzc3OTk1MDAzMg==/v.swf

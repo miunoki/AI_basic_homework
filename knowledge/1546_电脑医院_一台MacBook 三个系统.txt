@@ -1,0 +1,48 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】一台MacBook 三个系统
+
+【帖子正文】
+今天给MacBook装上了Windows11Pro_ARM和Ubuntu24.04
+iPad在此处只是一个显示器而已
+
+步骤比较繁琐 后面大家想要可以出教程
+https://file.cc98.org/v4-upload/d/2026/0318/tnozhboq.webp
+
+
+【精选回复】（共 5 条）
+
+
+--- 回复 1 ---
+[早睡静规NI 的回答]
+以下是引用1楼：用户FetalisHki在2026-03-18 19:29:52的发言：>>查看原帖<<
+今天给MacBook装上了Windows11Pro_ARM和Ubuntu24.04
+iPad在此处只是一个显示器而已
+
+步骤比较繁琐 后面大家想要可以出教程
+https://file.cc98.org/v4-upload/d/2026/0318/tnozhboq.webp
+
+占用内存多少
+
+
+--- 回复 2 ---
+[h272377502 的回答]
+以下是引用4楼：用户FishY在2026-03-18 19:45:36的发言：>>查看原帖<<
+全是虚拟机么
+不是虚拟机的话，同时也开不了
+
+
+--- 回复 3 ---
+[D2_m 的回答]
+已严肃bd
+https://file.cc98.org/v4-upload/d/2026/0318/v3pm4xfm.webp
+
+
+--- 回复 4 ---
+[二笔君 的回答]
+一个gj，三个zf，这难道不是对孙先生的背叛吗（有端联想）
+
+
+--- 回复 5 ---
+[Bill_Feng 的回答]
+https://file.cc98.org/v4-upload/d/2026/0321/suwrlbyf.webp

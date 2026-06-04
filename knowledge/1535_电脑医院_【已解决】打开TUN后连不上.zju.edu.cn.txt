@@ -1,0 +1,122 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】【已解决】打开TUN后连不上*.zju.edu.cn
+
+【帖子正文】
+lz用的是clash verge，最近又开始用反重力，需要开tun模式。但是发现开了tun模式后浙大校内网上不去（我配置了DOMAIN-SUFFIX） 
+报错：
+```
+04-24 09:41:52WARNING
+ dial DIRECT (match DomainSuffix/zju.edu.cn) 198.18.0.1:54626 --> courses.zju.edu.cn:443
+error: connect failed: dial tcp 210.32.157.21:443: i/o timeout
+```
+看98上的帖子都说是DNS的问题，但是我试了添加name-server，把DNS改成false都还是没用诶，这下不知道是什么问题了，来求助8u。
+
+解决方式：强制指定*.zju.edu.cn的dns服务器
+```
+ nameserver-policy:
+ '+.zju.edu.cn': 10.10.0.21
+```
+
+
+【精选回复】（共 7 条）
+
+
+--- 回复 1 ---
+[FocusRZ 的回答]
+TUN模式的话，可能需要写一下profiles文件的rule部分？把*.zju.edu.cn的域名全部走DIRECT
+
+
+--- 回复 2 ---
+[XXOY 的回答]
+我也是这个情况，楼主解决了能不能踢我一下
+
+我也是已经走direct了
+
+https://file.cc98.org/v4-upload/d/2026/0424/prmnjnhk.webp
+
+
+--- 回复 3 ---
+[天谶 的回答]
+dns 服务器不对，应该用校内 dns 服务器
+这个 210.xxx 的地址是校外 dns 解析出来的结果
+校内应该是 10.xxx 
+补个图
+https://file.cc98.org/v4-upload/d/2026/0424/wezy0fxb.webp
+
+至于怎么设置 dns 服务器，我也不太清楚，问问 ai 吧
+
+
+--- 回复 4 ---
+[FocusRZ 的回答]
+以下是引用4楼：用户天谶在2026-04-24 09:58:35的发言：>>查看原帖<<
+dns 服务器不对，应该用校内 dns 服务器
+这个 210.xxx 的地址是校外 dns 解析出来的结果
+校内应该是 10.xxx 
+校内DNS我记得是10.10.0.21
+
+
+--- 回复 5 ---
+[天谶 的回答]
+以下是引用6楼：用户冥冴在2026-04-24 10:03:53的发言：>>查看原帖<<
+>**以下是引用5楼：用户FocusRZ在2026-04-24 10:00:32的发言：**
+以下是引用4楼：用户天谶在2026-04-24 09:58:35的发言：>>查看原帖<<
+dns 服务器不对，应该用校内 dns 服务器
+这个 210.xxx 的地址是校外 dns 解析出来的结果
+校内应该是 10.xxx 
+校内DNS我记得是10.10.0.21 
+
+我的配置段落：
+```
+ nameserver:
+ - 10.10.0.21
+ - 119.29.29.29
+ - 114.114.114.114
+ - 223.5.5.5
+ nameserver-policy:
+ '+.edu.cn': 'system'
+```
+但是没有用诶，还是连不上的
+报错 log 是什么, 没 log 我只能帮你算一卦
+
+如果还是 ` dial DIRECT (match DomainSuffix/zju.edu.cn) 198.18.0.1:54626 --> courses.zju.edu.cn:443
+error: connect failed: dial tcp 210.32.157.21:443: i/o timeout` 那就是 dns 设置不对, 其他情况我就不知道了
+
+
+--- 回复 6 ---
+[天谶 的回答]
+以下是引用8楼：用户冥冴在2026-04-24 10:11:58的发言：>>查看原帖<<
+以下是引用7楼：用户天谶在2026-04-24 10:09:36的发言：>>查看原帖<<
+以下是引用6楼：用户冥冴在2026-04-24 10:03:53的发言：>>查看原帖<<
+>**以下是引用5楼：用户FocusRZ在2026-04-24 10:00:32的发言：**
+以下是引用4楼：用户天谶在2026-04-24 09:58:35的发言：>>查看原帖<<
+dns 服务器不对，应该用校内 dns 服务器
+这个 210.xxx 的地址是校外 dns 解析出来的结果
+校内应该是 10.xxx 
+校内DNS我记得是10.10.0.21 
+
+我的配置段落：
+```
+ nameserver:
+ - 10.10.0.21
+ - 119.29.29.29
+ - 114.114.114.114
+ - 223.5.5.5
+ nameserver-policy:
+ '+.edu.cn': 'system'
+```
+但是没有用诶，还是连不上的
+报错 log 是什么, 没 log 我只能帮你算一卦
+
+如果还是 ` dial DIRECT (match DomainSuffix/zju.edu.cn) 198.18.0.1:54626 --> courses.zju.edu.cn:443
+error: connect failed: dial tcp 210.32.157.21:443: i/o timeout` 那就是 dns 设置不对, 其他情况我就不知道了
+是的，报错没变（其实我没改配置，我原本就已经设置了这两个
+那为什么不问问 ai 呢? 你不是都要用反重力了吗, 都问题确定了是 dns 的问题, 问问 ai 一下就解答了啊
+https://file.cc98.org/v4-upload/d/2026/0424/lneiseeq.webp
+https://file.cc98.org/v4-upload/d/2026/0424/wmxptxmk.webp
+https://file.cc98.org/v4-upload/d/2026/0424/vmqmhqdv.webp
+
+
+--- 回复 7 ---
+[风过太平洋 的回答]
+这我也遇到过，系统设置->网络和Internet->代理->手动设置代理里添加一条*zju.edu.cn

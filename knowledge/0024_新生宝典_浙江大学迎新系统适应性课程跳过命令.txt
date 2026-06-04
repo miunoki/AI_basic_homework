@@ -1,0 +1,95 @@
+【来源】CC98论坛「新生宝典」版块
+
+【标题】浙江大学迎新系统适应性课程跳过命令
+
+【帖子正文】
+使用方式：http://regi.zju.edu.cn/classes 中的适应性课程，打开课程详情，F12启动网页控制台，输入神秘代码：
+
+```
+document.querySelector('div.content-box').__vue__.viewTime=document.querySelector('div.content-box').__vue__.detail.timeLimit-1;document.querySelector('video').play()
+```
+
+等一秒即可自动完成该课程学习。
+
+适应性课程在某种意义上，有些时候可能或许大概有一定程度的用处，所以请确定课程内容对自己没啥用再跳过。
+
+更新：虽然但是，建议大家使用 https://www.cc98.org/topic/5664345 这个帖子里的代码，3秒完事，比我这个方便不少。
+
+
+【精选回复】（共 15 条）
+
+
+--- 回复 1 ---
+[RGBpupupu 的回答]
+我觉得还是别公开了，很容易被人上纲上线扣一个【破坏计算机系统罪】
+
+@3200101971
+
+
+--- 回复 2 ---
+[桃子萌豆 的回答]
+以下是引用1楼：用户GUNK在2024-08-12 11:03:50的发言：>>查看原帖<<
+使用方式：http://regi.zju.edu.cn/classes 中的适应性课程，打开课程详情，F12启动网页控制台，输入神秘代码：
+
+```
+document.querySelector('div.content-box').__vue__.viewTime=document.querySelector('div.content-box').__vue__.detail.timeLimit-1;document.querySelector('video').play()
+```
+
+等一秒即可自动完成该课程学习。
+
+适应性课程在某种意义上，有些时候可能或许大概有一定程度的用处，所以请确定课程内容对自己没啥用再跳过。
+
+
+--- 回复 3 ---
+[céleste 的回答]
+在哪里输入这串代码呢？
+
+
+--- 回复 4 ---
+[二月冰河 的回答]
+以下是引用1楼：用户GUNK在2024-08-12 11:03:50的发言：>>查看原帖<<
+使用方式：http://regi.zju.edu.cn/classes 中的适应性课程，打开课程详情，F12启动网页控制台，输入神秘代码：
+
+```
+document.querySelector('div.content-box').__vue__.viewTime=document.querySelector('div.content-box').__vue__.detail.timeLimit-1;document.querySelector('video').play()
+```
+
+等一秒即可自动完成该课程学习。
+
+适应性课程在某种意义上，有些时候可能或许大概有一定程度的用处，所以请确定课程内容对自己没啥用再跳过。
+bdbd
+
+
+--- 回复 5 ---
+[西山有扇窗 的回答]
+bdbd，不过好像还是得每个资源都点一次。
+
+
+--- 回复 6 ---
+[寂静的闹市 的回答]
+bd，早看到这个好了，作为小白还研究了一会儿，手动post跳过的
+
+
+--- 回复 7 ---
+[你干嘛嗨呦 的回答]
+有用帖，电脑小白一枚， 应该是这个眼睛按下去创建表达式吧，开cc98电脑端把整个代码复制进去按enter就行了，微信小程序代码显示不完全https://file.cc98.org/v4-upload/d/2025/0207/to54zlwi.webp
+
+
+--- 回复 8 ---
+[杉珊山 的回答]
+为啥不能直接调用saveStudy方法呢？
+
+
+--- 回复 9 ---
+[rinke 的回答]
+nb666，实测有效，一秒所有内容全部学习完成。
+
+
+--- 回复 10 ---
+[jiaA 的回答]
+VM468:1 Uncaught TypeError: Cannot read properties of undefined (reading 'timeLimit')
+ at <anonymous>:1:116
+(anonymous)	@	VM468:1
+
+求助输入后这样报错是什么原因呢。
+已解决【需要点到具体课程里面】

@@ -1,0 +1,107 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】基于MAS的Windows安装激活流程
+
+【帖子正文】
+撰写本文的原因，是苯人发现在论坛中不时会有朋友发帖询问如何使用ZJU提供的正版Windows激活、闲鱼10块钱激活码是否靠谱等等。事实上目前已经有开源方案 Microsoft Activation Scripts，也即回帖中常见的网址 (massgrave.dev)。用户在微软官方网站下载正版Windows操作系统以及Office软件之后，可以通过该脚本一键永久激活。该方案比较简单省事，苯人给自家电脑以及亲戚的笔记本激活了几次系统，目前来看没有任何问题。
+
+正巧我手边有一个需要重装系统的小主机，因此顺便在这里简单记录下载镜像、制作安装盘、安装系统以及激活软件的全部过程。
+
+## 制作安装盘
+
+这一步需要从微软官方下载 Windows 11 官方镜像，接着使用Rufus程序，将一个闲置U盘制作为安装盘。
+
+首先来到Windows软件下载官网 (https://www.microsoft.com/zh-cn/software-download/windows11)，选择 Windows 家庭版或专业版都可以。这里给出了几种制作安装盘的方案，我自己通常是先下载iso文件，再用 Rufus 自行做安装盘。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/yrtsaw24.webp)
+
+下载完成后会获得一个iso文件，接下来来到 Rufus 下载链接 (https://rufus.ie/zh/) 处，下载最新版本的程序得到一个exe文件。准备好一个闲置的 U 盘，打开该文件后选择好插入的 U 盘以及下载好的镜像，其它选项可以保持默认。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/jz30sees.webp)
+
+点击开始后会弹出一些选项，这一步可以根据自己需求修改，看不懂或者没需求可以保持默认开始做系统盘。开始这一步后会首先将 U 盘格式化，若 U 盘中有文件记得备份。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/yrqnlxdo.webp)
+
+等待程序运行完毕，现在我们得到一个制作好的 Windows 系统盘，这样可以开始安装系统。
+
+## 安装系统
+
+这一步是给电脑安装上新系统，由于这一步没办法截图，全部使用门锁拍照。
+
+针对新电脑（系统内没有任何操作系统），插入 U 盘后打开电源就会自动进入引导程序。而对于旧电脑，需要进入 BIOS 将 U 盘选择为启动设备，接着进入引导程序。图中是一台曾经安装过 Windows 的电脑，因此需要手动选择 U 盘作为启动设备，然后回车：
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/rnc1vv0w.webp)
+
+正常情况下会发现弹出一个熟悉的 Windows 风格对话框。对于旧电脑，选择好语言与输入法后，会提示选择修复或安装新系统。这里我们选择安装新系统，并抹掉原有的（C 盘）全部数据。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/pwlz4lfl.webp)
+
+接下来系统会提示输入激活码，这里直接跳过，等装好系统后再激活。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/sj3xeiut.webp)
+
+阅读并同意协议后会来让我们选择系统安装位置。我的旧电脑原本有做分盘，分别是 C 盘（256 GB）以及 D 盘（700 GB），这里选择安装在原来的 C 盘位置。其它盘的数据在正常重装的情况下是不会被移除的，但以防万一还是建议备份一下。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/zji2ec3m.webp)
+
+确认好安装选项后，系统开始自动安装，等待一段时间后我们将进入熟悉的 Windows 页面。此时选择好国家地区、连上Wi-Fi并做好隐私设置后，我们终于进入 Windows 页面。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/d5j0rz0j.webp)
+
+至此系统安装流程结束。
+
+## 激活 Windows 系统
+
+这里我们使用的是 Microsoft Activation Scripts，开源在GitHub (https://github.com/massgravel/Microsoft-Activation-Scripts)，也可以去官网 (https://massgrave.dev/)看看相关文档。简单来说激活方式如下：
+
+在菜单栏页面找到系统自带的 PowerShell，点击启动。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/t2yqgwff.webp)
+
+输入文档中给出的命令`irm https://get.activated.win | iex`后回车。该命令会从远程下载激活脚本，然后在本地运行。等待下载一段时间后，不出意外的话将会显示一个简单的菜单栏。其中 为激活方式，对于 Windows 系统，我一般选择 。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/jccsetx4.webp)
+
+输入之后脚本将自动开始检测已安装的系统版本，接着自动生成产品密钥，最终完成永久激活。
+
+!(https://file.cc98.org/v4-upload/d/2026/0323/no5va5f5.webp)
+
+至此我们完成了 Windows 系统的安装与激活。而对于 Office 软件，同样可以通过上述的方式进行激活，不过 Office 全家桶的下载地址实在是有点刁钻，苯人通常是在 MAS 的文档中找链接下载：(https://massgrave.dev/genuine-installation-media)。
+
+希望对不太清楚如何安装并激活 Windows 的朋友有些帮助。
+
+
+【精选回复】（共 5 条）
+
+
+--- 回复 1 ---
+[水泥大马猴 的回答]
+我一眼看成了mac的激活我说怎么mac安装页面跟这个不一样呢
+
+
+--- 回复 2 ---
+[zjjncsn 的回答]
+bdbd前几天还想着论坛上没有的话写一下，今天前辈就写了
+
+
+--- 回复 3 ---
+[peaky 的回答]
+请问这样激活跟直接拿激活码激活有什么区别呢？
+
+
+--- 回复 4 ---
+[萌萌人 的回答]
+以下是引用5楼：用户peaky在2026-03-23 01:48:57的发言：>>查看原帖<<
+请问这样激活跟直接拿激活码激活有什么区别呢？
+区别在于这是一般意义上的盗版
+mas这里提供的4种选项中
+hwid：windows为了推广win10 可以免费从win7win8升级（即使你是盗版），伪造升级记录就能从微软骗个密钥
+ohook：hook office的激活机制让其被永久激活
+tsforge：造个假凭证放进去让windows以为自己已经被激活了
+kms：kms服务是为了企业批量激活和管理用户，但kms可以被伪造以激活windows。浙大的正版软件平台其实就是kms，不过浙大真有license。
+
+
+--- 回复 5 ---
+[Ch1orine 的回答]
+怎么没有早点看到，搞不定office，已经开了三年365了。

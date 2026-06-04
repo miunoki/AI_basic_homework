@@ -1,0 +1,23 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】clash无论如何连不上
+
+【帖子正文】
+https://file.cc98.org/v4-upload/d/2026/0416/ftn05flv.webp
+https://file.cc98.org/v4-upload/d/2026/0416/d5cf4ztb.webp
+https://file.cc98.org/v4-upload/d/2026/0416/hevo2zde.webp
+https://file.cc98.org/v4-upload/d/2026/0416/44ktte3q.webp
+配置如图，YouTube，Gemini等仍然打不开，连接校网和手机热点都不可以，有没有前辈知道可能是什么原因
+
+
+【精选回复】（共 2 条）
+
+
+--- 回复 1 ---
+[WalkinDad 的回答]
+自动选择啥阴，你点具体的节点试试呢
+
+
+--- 回复 2 ---
+[乐乐侠 的回答]
+最好的方法是换v2rayN，clash verge的优化实在太烂了

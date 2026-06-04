@@ -1,0 +1,37 @@
+【来源】CC98论坛「论坛指南」版块
+
+【标题】clash域名冲突，www.cc98.org 所需要的域名list
+
+【帖子正文】
+出答案了，加双引号。
+https://file.cc98.org/v2-upload/2024-04-25/px0fohwv.webp
+
+-------------------------------+----------------------------------------------------------
+Clash跟cc98的域名冲突了，所以我目前设置了一下bypass。
+
+但是Clash软件上的域名bypass选项似乎并不能设置通配符，站务的兄弟们有没有人能帮我确认一下我设置的list对不对。
+（或者有没有更好的方法）
+
+https://file.cc98.org/v2-upload/2024-04-25/ao3ygzyq.webp
+
+
+【精选回复】（共 3 条）
+
+
+--- 回复 1 ---
+[du33169 的回答]
+用clash的parser加prepend rules, 支持域名后缀和ip选段
+
+
+--- 回复 2 ---
+[Simonchis 的回答]
+"*zju.edu.cn*"
+"*cc98*"
+"*nexushd"
+支持通配符的，要用双引号
+
+
+--- 回复 3 ---
+[icyrockton 的回答]
+可以看这个帖子里的内容 
+https://www.cc98.org/topic/5872568

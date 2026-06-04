@@ -1,0 +1,93 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】手搓PPT时代也许结束了
+
+【帖子正文】
+PowerPoint推出了chatgpt插件,可以直接使用chatgpt编辑PPThttps://file.cc98.org/v4-upload/d/2026/0522/0thfhh0v.webp
+
+目前,对于PPT制作,我大概使用过如下方法:
+
+1. codex + zju beamer
+
+2. codex + reveal.js
+
+这两种都是基于代码生成的PPT,现在直接编辑PPT的插件也有了,感觉对于我个人而言,也许不会再手搓PPT了
+
+
+【精选回复】（共 12 条）
+
+
+--- 回复 1 ---
+[StevenStg 的回答]
+同蹲效果（不是说gpt的前端/审美一坨吗
+
+
+--- 回复 2 ---
+[量子星辰 的回答]
+昨晚codex给我做的PPT真的一坨，这种阉割的真的能行吗
+
+
+--- 回复 3 ---
+[ght000 的回答]
+以下是引用4楼：用户愿岁并谢在2026-05-22 16:03:48的发言：>>查看原帖<<
+以下是引用2楼：用户赵树下在2026-05-22 16:00:35的发言：>>查看原帖<<
+效果好吗
+效果差强人意,如果对PPT质量有比较高的要求,应该还是得手搓,不过我是让它从0生成一份的https://file.cc98.org/v4-upload/d/2026/0522/rycuziiz.webp
+
+对于我这种对PPT没太高要求的,这三种方法估计可以覆盖我的所有需要了
+这做出来会被老板骂死的
+
+
+--- 回复 4 ---
+[LilPolaris 的回答]
+用一些好的skill已经能生成很不错的ppt了（跟我人做的差不多）也能插入图片啥的
+
+
+--- 回复 5 ---
+[寸铁 的回答]
+试试claude也有，感觉还行
+
+
+--- 回复 6 ---
+[向多多学习 的回答]
+以下是引用8楼：用户LilPolaris在2026-05-22 16:09:43的发言：>>查看原帖<<
+用一些好的skill已经能生成很不错的ppt了（跟我人做的差不多）也能插入图片啥的
+比如哪些skill哇
+
+
+--- 回复 7 ---
+[zidu 的回答]
+zju beamer是什么
+
+
+--- 回复 8 ---
+[zidu 的回答]
+以下是引用16楼：用户愿岁并谢在2026-05-22 16:26:01的发言：>>查看原帖<<
+以下是引用14楼：用户zidu在2026-05-22 16:22:39的发言：>>查看原帖<<
+zju beamer是什么
+https://www.overleaf.com/latex/templates?q=zju 这里有好多前辈们上传的模版,我说的zju beamer就是https://www.overleaf.com/latex/templates/zhe-jiang-da-xue-beamer-mo-ban-zju-beamer-template/jhtfvynrcbrg
+哦哦好的谢谢
+
+
+--- 回复 9 ---
+[LilPolaris 的回答]
+以下是引用10楼：用户向多多学习在2026-05-22 16:12:08的发言：>>查看原帖<<
+以下是引用8楼：用户LilPolaris在2026-05-22 16:09:43的发言：>>查看原帖<<
+用一些好的skill已经能生成很不错的ppt了（跟我人做的差不多）也能插入图片啥的
+比如哪些skill哇
+github 仓库地址：https://github.com/hugohe3/ppt-master
+atomgit 仓库地址：https://atomgit.com/hugohe3/ppt-master
+我用的是这个，感觉挺不错，然后里面有些默认的说不能生成图片、添加图片都可以通过对话解决
+
+
+--- 回复 10 ---
+[向多多学习 的回答]
+以下是引用18楼：用户LilPolaris在2026-05-22 16:33:12的发言：>>查看原帖<<
+以下是引用10楼：用户向多多学习在2026-05-22 16:12:08的发言：>>查看原帖<<
+以下是引用8楼：用户LilPolaris在2026-05-22 16:09:43的发言：>>查看原帖<<
+用一些好的skill已经能生成很不错的ppt了（跟我人做的差不多）也能插入图片啥的
+比如哪些skill哇
+github 仓库地址：https://github.com/hugohe3/ppt-master
+atomgit 仓库地址：https://atomgit.com/hugohe3/ppt-master
+我用的是这个，感觉挺不错，然后里面有些默认的说不能生成图片、添加图片都可以通过对话解决
+感谢前辈！

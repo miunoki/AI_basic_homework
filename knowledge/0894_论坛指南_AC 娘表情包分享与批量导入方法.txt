@@ -1,0 +1,785 @@
+【来源】CC98论坛「论坛指南」版块
+
+【标题】AC 娘表情包分享与批量导入方法
+
+【帖子正文】
+# AC 娘表情包分享与批量导入方法
+
+![](http://file.cc98.org/v2-upload/lgpb00uy.gif)
+
+前一阵子有很多帖子提到了如何将 AC 娘表情包导入到微信或 QQ 中，其中涉及到表情图片的格式、背景以及批量导入方法等。
+
+由于 CC98 小程序上的 AC 娘表情包就是(https://www.cc98.org/topic/5023933/1)在 (https://www.acfun.cn/emot/)基础上处理修改的，所以为了避免大家浪费时间走弯路，我将原文件在此直接分享一下，也简单介绍一下批量导入的方法。
+
+## 🖼️ 表情图片原文件
+
+### 📁 原文件下载
+
+- (http://file.cc98.org/v2-upload/sdmiflmu.zip)
+- (http://file.cc98.org/v2-upload/civ2ecs1.zip)
+- (http://file.cc98.org/v2-upload/gxhn0zdf.eif)（双击可直接导入到 QQ）
+
+### ✨ 特点
+
+- 覆盖 (https://www.acfun.cn/emot/)所提供的下面 3 组的所有表情，共 149 个：
+ 1. (https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/acmusume.eif)
+ 2. (https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/ac_anonym.eif)
+ 3. (https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/acmusume_new.eif)
+ 
+ 备注：官网提供的(https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/ac_ow.eif)没有在 CC98 中使用，而且也不如其他三组流行度高，因此没有做处理。所有这些表情包 png 格式图片都可以(https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/acfun_emoji.zip)
+
+- 处理后的表情提供 png 和 gif 这两种格式选择，支持透明背景，没有白色矩形背景
+
+- 表情内部做了白色填充处理，边缘做了白色描边处理，可同时用在深色和浅色模式
+
+### 🎥 示例
+
+和 CC98 小程序上的 AC 娘表情一样，就不贴图了。
+
+### ⚒️ 表情图片处理方法
+
+我并没有一张一张手动处理从官网上下载的这 149 个表情图片，而是利用了 Photoshop 的(https://helpx.adobe.com/cn/photoshop/using/creating-actions.html)和(https://sourl.cn/PjacHw)以及 (https://imagemagick.org/index.php) 的格式转换功能，具体步骤如果感兴趣的人比较多的话我就更新在这里。
+
+## 💾 批量导入方法
+
+### 🐧 QQ
+
+导入到 QQ 相对来说非常方便，你可以直接下载上面的 (http://file.cc98.org/v2-upload/gxhn0zdf.eif) 文件，然后双击即可批量导入这 149 个表情。如果你想了解如何将一张张表情图片批量导入到 QQ 中，QQ 表情管理面板已足够 self-explanatory，或者百度一下即可~
+
+不过要**注意**的是即使你导入的是具有透明背景的 png 图片，当它被 QQ 添加为表情之后，这个表情也会变成矩形白色背景。因此在你手动导入时请选择 gif 图片。
+
+### 💬 微信
+
+微信并没有批量导入表情的功能，比较快速的人工导入方法可参见 (https://www.cc98.org/user/id/618903) 写的教程帖：(https://www.cc98.org/topic/5063106)。
+
+其实基于上述人工导入方法，已有人尝试通过程序模拟鼠标操作解放人力，如：(https://www.zhihu.com/question/36939285/answer/105995868) 和 (https://simonhu-hn.github.io/2020/10/22/%E5%A6%82%E4%BD%95%E6%8A%8ATelegram%E7%9A%84sticker%E6%89%B9%E9%87%8F%E6%B7%BB%E5%8A%A0%E5%88%B0Wechat%E9%87%8C/)
+
+上面这两个文章用的是一样的代码，是借助 Jupyter Notebook 运行 Python 程序，主要利用 `pyautogui` 包控制鼠标操作来完成自动化表情导入。知乎回答有一个视频演示，由于该回答设置了禁止转载，出于尊重不再搬运视频，大家可以通过(https://video.zhihu.com/video/1220033110756196352)直接跳转到该知乎视频。
+
+简单来说，为了使用上述方法，你需要做如下工作（感谢脚本原作者，我作为搬运工再详细解释一下流程）：
+
+1. 安装 (https://www.python.org/)
+
+2. 安装必要的包：(https://pypi.org/project/PyAutoGUI/) 和 (https://pypi.org/project/pyperclip/)
+
+3. 安装 (https://jupyter.org/install)
+
+4. 下载并保存自动化代码文件，我在原代码基础上添加了很多注释，所以运行方法按照注释操作即可，源码见附录：
+ (http://file.cc98.org/v2-upload/yzzt4csi.ipynb)
+
+5. 登录 PC 微信，打开微信文件传输助手，建议利用分屏功能将文件传输助手窗口放在右半屏，将接下来要打开的 Jupyter Notebook 放在左半屏
+
+6. 在上述自动化代码文件所在目录启动 Jupyter Notebook：`jupyter notebook`，打开刚刚保存好的 `.ipynb` 文件，然后按照注释逐单元运行，其中部分语句可视情况自定义：
+ ![](http://file.cc98.org/v2-upload/ioazyo1s.png)
+
+7. 等待最后一个单元的批量添加操作运行完毕即可，但**需要注意**的是，微信提示表情成功添加完毕后不会立即更新你的自定义表情组，需要等一段时间才会陆续出现在自定义表情中，所以看到手机端还没有已经添加成功的表情时不必过于心急
+
+这是一个刚刚录制的操作视频：
+<video src="https://yunban-zw-1251001691.cos.ap-shanghai.myqcloud.com/uploadsoss/file/2021-04-22/be6c1a8a2a875d43fdc627fc1af65748.mp4" width="100%" controls></video>
+
+## 🌓 效果
+
+- 微信浅色模式：
+ ![](http://file.cc98.org/v2-upload/ugqngcgd.png)
+
+- 微信深色模式：
+ ![](http://file.cc98.org/v2-upload/pc03yirl.png)
+
+## 📝 其他
+
+为完整起见，ACFUN 官网所提供的彩色版 AC 娘动图表情 gif 文件也在这里提供一下（官网只提供 eif 格式下载）：
+
+- (http://file.cc98.org/v2-upload/2nbfhx2s.zip)
+- (http://file.cc98.org/v2-upload/botvc2w0.zip)
+
+不过 QQ 和微信都已经有正式的彩色版 AC 娘表情包提供，可直接在表情包商店搜索，大部分无需手动导入。
+
+## 🗄️ 附录
+
+- `addStickers.ipynb`:
+
+ ```json
+ {
+ "cells": ,
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": ), reverse=True) # 所有的文件名"
+ ]
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ }
+ ],
+ "metadata": {
+ "anaconda-cloud": {},
+ "kernelspec": {
+ "display_name": "Python 3",
+ "language": "python",
+ "name": "python3"
+ },
+ "language_info": {
+ "codemirror_mode": {
+ "name": "ipython",
+ "version": 3
+ },
+ "file_extension": ".py",
+ "mimetype": "text/x-python",
+ "name": "python",
+ "nbconvert_exporter": "python",
+ "pygments_lexer": "ipython3",
+ "version": "3.9.1"
+ }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+ }
+ ```
+
+- `addStickers.py`:
+
+ ```python
+ # 以下操作建议均单步运行（自动按键要获取鼠标位置，必须单步运行）
+ # 快捷键是 Shift+Enter
+ 
+ # 引入必要的库，如果没有这些库，请事先用 pip 等包管理工具装好
+ import os # 文件/目录读取
+ import pyautogui # 自动按键
+ import pyperclip # 操作剪贴板
+ import time # 暂停
+ 
+ # 每次动作暂停 0.5 秒（考虑到窗口的打开动画速度等，按需调整）
+ pyautogui.PAUSE = 0.5
+ 
+ # 存放 gif 表情的文件夹路径，自行修改
+ file_path = "D:\\temp\\ac-gif"
+ 
+ # 取鼠标坐标 发送文件按钮
+ # 在 notebook 窗口处于聚焦的状态下
+ # （也就是本窗口需要是活动窗口，这样才能够使用快捷键操作）
+ # 鼠标移动到右侧发送文件按钮的地方
+ # 然后通过 Shift + Enter 快捷键运行此单元并前进到下一单元
+ position_send_file = pyautogui.position()
+ 
+ # 取鼠标坐标 新发的图片
+ # 在执行本条命令之前，先将一个ac娘表情（gif 图片）发送若干次，
+ # 目的是之后每次发送时，最新的消息都会出现在相同的位置（聊天窗口底部）
+ # 在 notebook 窗口处于聚焦的状态下
+ # 鼠标移动到右侧最新一条表情消息的表情图片最中央的位置
+ # 然后通过 Shift + Enter 快捷键运行此单元并前进到下一单元
+ position_new_photo = pyautogui.position()
+ 
+ # 取鼠标坐标 添加到表情
+ # 首先在上一位置（右侧最新一条表情消息的表情图片最中央的位置）右键
+ # 右键菜单，记住“添加到表情”这一选项的大致位置，最好是最中间的地方，容错率较高
+ # 然后重新令 notebook 窗口处于聚焦的状态下
+ # 鼠标移动到右侧刚刚你记住的大致位置
+ # 然后通过 Shift + Enter 快捷键运行此单元并前进到下一单元
+ position_add_emoji = pyautogui.position()
+ 
+ # 如果你刚才发送的若干次ac娘图片已经添加到自定义表情中了
+ # 注意从文件夹中删除掉这张图片，或者从自定义表情中删除掉这个表情
+ # 因为已经添加过表情的图片右键不会有“添加到表情”这一选项
+ # 程序记住的鼠标位置对应的选项会是“多选”，触发后就会阻止脚本正常工作
+ 
+ # 文件名列表是按照文件名的数字倒序排列的
+ # 这样最后添加的表情（数字较小的）会出现在自定义表情中的最前面
+ # 与 CC98 的表情排序一致
+ # 也可按照自己需求挑选或重新排序
+ file_name_list = sorted(os.listdir(file_path), key=lambda x: int(x.split(".")), reverse=True) # 所有的文件名
+ 
+ for file_name in file_name_list:
+ pyperclip.copy(os.path.join(file_path, file_name)) # 文件名拷到剪贴板
+ pyautogui.click(position_send_file) # 发送文件
+ pyautogui.hotkey('ctrl', 'v') # 粘贴到文件框
+ pyautogui.hotkey('enter') # 打开
+ pyautogui.hotkey('enter') # 发送
+ time.sleep(1) # 根据网络条件调整，未发送成功加载好的表情右键无法添加
+ pyautogui.click(position_new_photo, button='right') # 右键新发的图片
+ pyautogui.click(position_add_emoji) # 添加到表情
+ ```
+
+
+【精选回复】（共 5 条）
+
+
+--- 回复 1 ---
+[悠远的苍穹 的回答]
+tql
+——来自微信小程序「CC98」
+
+
+--- 回复 2 ---
+[zyzmlsan 的回答]
+sy强呐，虽然我只需要ac01？
+
+
+--- 回复 3 ---
+[Laylame 的回答]
+tql昨天我还一个一个添加的
+
+
+--- 回复 4 ---
+[静看山空 的回答]
+以下是引用1楼：用户Secant在2021-04-22 10:09:42的发言：>>查看原帖<<
+# AC 娘表情包分享与批量导入方法
+
+![](http://file.cc98.org/v2-upload/lgpb00uy.gif)
+
+前一阵子有很多帖子提到了如何将 AC 娘表情包导入到微信或 QQ 中，其中涉及到表情图片的格式、背景以及批量导入方法等。
+
+由于 CC98 小程序上的 AC 娘表情包就是(https://www.cc98.org/topic/5023933/1)在 (https://www.acfun.cn/emot/)基础上处理修改的，所以为了避免大家浪费时间走弯路，我将原文件在此直接分享一下，也简单介绍一下批量导入的方法。
+
+## 🖼️ 表情图片原文件
+
+### 📁 原文件下载
+
+- (http://file.cc98.org/v2-upload/sdmiflmu.zip)
+- (http://file.cc98.org/v2-upload/civ2ecs1.zip)
+- (http://file.cc98.org/v2-upload/gxhn0zdf.eif)（双击可直接导入到 QQ）
+
+### ✨ 特点
+
+- 覆盖 (https://www.acfun.cn/emot/)所提供的下面 3 组的所有表情，共 149 个：
+ 1. (https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/acmusume.eif)
+ 2. (https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/ac_anonym.eif)
+ 3. (https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/acmusume_new.eif)
+ 
+ 备注：官网提供的(https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/ac_ow.eif)没有在 CC98 中使用，而且也不如其他三组流行度高，因此没有做处理。所有这些表情包 png 格式图片都可以(https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/acfun_emoji.zip)
+
+- 处理后的表情提供 png 和 gif 这两种格式选择，支持透明背景，没有白色矩形背景
+
+- 表情内部做了白色填充处理，边缘做了白色描边处理，可同时用在深色和浅色模式
+
+### 🎥 示例
+
+和 CC98 小程序上的 AC 娘表情一样，就不贴图了。
+
+### ⚒️ 表情图片处理方法
+
+我并没有一张一张手动处理从官网上下载的这 149 个表情图片，而是利用了 Photoshop 的(https://helpx.adobe.com/cn/photoshop/using/creating-actions.html)和(https://sourl.cn/PjacHw)以及 (https://imagemagick.org/index.php) 的格式转换功能，具体步骤如果感兴趣的人比较多的话我就更新在这里。
+
+## 💾 批量导入方法
+
+### 🐧 QQ
+
+导入到 QQ 相对来说非常方便，你可以直接下载上面的 (http://file.cc98.org/v2-upload/gxhn0zdf.eif) 文件，然后双击即可批量导入这 149 个表情。如果你想了解如何将一张张表情图片批量导入到 QQ 中，QQ 表情管理面板已足够 self-explanatory，或者百度一下即可~
+
+不过要**注意**的是即使你导入的是具有透明背景的 png 图片，当它被 QQ 添加为表情之后，这个表情也会变成矩形白色背景。因此在你手动导入时请选择 gif 图片。
+
+### 💬 微信
+
+微信并没有批量导入表情的功能，比较快速的人工导入方法可参见 (https://www.cc98.org/user/id/618903) 写的教程帖：(https://www.cc98.org/topic/5063106)。
+
+其实基于上述人工导入方法，已有人尝试通过程序模拟鼠标操作解放人力，如：(https://www.zhihu.com/question/36939285/answer/105995868) 和 (https://simonhu-hn.github.io/2020/10/22/%E5%A6%82%E4%BD%95%E6%8A%8ATelegram%E7%9A%84sticker%E6%89%B9%E9%87%8F%E6%B7%BB%E5%8A%A0%E5%88%B0Wechat%E9%87%8C/)
+
+上面这两个文章用的是一样的代码，是借助 Jupyter Notebook 运行 Python 程序，主要利用 `pyautogui` 包控制鼠标操作来完成自动化表情导入。知乎回答有一个视频演示，由于该回答设置了禁止转载，出于尊重不再搬运视频，大家可以通过(https://video.zhihu.com/video/1220033110756196352)直接跳转到该知乎视频。
+
+简单来说，为了使用上述方法，你需要做如下工作（感谢脚本原作者，我作为搬运工再详细解释一下流程）：
+
+1. 安装 (https://www.python.org/)
+
+2. 安装必要的包：(https://pypi.org/project/PyAutoGUI/) 和 (https://pypi.org/project/pyperclip/)
+
+3. 安装 (https://jupyter.org/install)
+
+4. 下载并保存自动化代码文件，我在原代码基础上添加了很多注释，所以运行方法按照注释操作即可，源码见附录：
+ (http://file.cc98.org/v2-upload/yzzt4csi.ipynb)
+
+5. 登录 PC 微信，打开微信文件传输助手，建议利用分屏功能将文件传输助手窗口放在右半屏，将接下来要打开的 Jupyter Notebook 放在左半屏
+
+6. 在上述自动化代码文件所在目录启动 Jupyter Notebook：`jupyter notebook`，打开刚刚保存好的 `.ipynb` 文件，然后按照注释逐单元运行，其中部分语句可视情况自定义：
+ ![](http://file.cc98.org/v2-upload/ioazyo1s.png)
+
+7. 等待最后一个单元的批量添加操作运行完毕即可，但**需要注意**的是，微信提示表情成功添加完毕后不会立即更新你的自定义表情组，需要等一段时间才会陆续出现在自定义表情中，所以看到手机端还没有已经添加成功的表情时不必过于心急
+
+## 🌓 效果
+
+- 微信浅色模式：
+ ![](http://file.cc98.org/v2-upload/ugqngcgd.png)
+
+- 微信深色模式：
+ ![](http://file.cc98.org/v2-upload/pc03yirl.png)
+
+## 📝 其他
+
+为完整起见，ACFUN 官网所提供的彩色版 AC 娘动图表情 gif 文件也在这里提供一下（官网只提供 eif 格式下载）：
+
+- (http://file.cc98.org/v2-upload/2nbfhx2s.zip)
+- (http://file.cc98.org/v2-upload/botvc2w0.zip)
+
+不过 QQ 和微信都已经有正式的彩色版 AC 娘表情包提供，可直接在表情包商店搜索，大部分无需手动导入。
+
+## 🗄️ 附录
+
+- `addStickers.ipynb`:
+
+ ```json
+ {
+ "cells": ,
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": ), reverse=True) # 所有的文件名"
+ ]
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ }
+ ],
+ "metadata": {
+ "anaconda-cloud": {},
+ "kernelspec": {
+ "display_name": "Python 3",
+ "language": "python",
+ "name": "python3"
+ },
+ "language_info": {
+ "codemirror_mode": {
+ "name": "ipython",
+ "version": 3
+ },
+ "file_extension": ".py",
+ "mimetype": "text/x-python",
+ "name": "python",
+ "nbconvert_exporter": "python",
+ "pygments_lexer": "ipython3",
+ "version": "3.9.1"
+ }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+ }
+ ```
+
+- `addStickers.py`:
+
+ ```python
+ # 以下操作建议均单步运行（自动按键要获取鼠标位置，必须单步运行）
+ # 快捷键是 Shift+Enter
+ 
+ # 引入必要的库，如果没有这些库，请事先用 pip 等包管理工具装好
+ import os # 文件/目录读取
+ import pyautogui # 自动按键
+ import pyperclip # 操作剪贴板
+ import time # 暂停
+ 
+ # 每次动作暂停 0.5 秒（考虑到窗口的打开动画速度等，按需调整）
+ pyautogui.PAUSE = 0.5
+ 
+ # 存放 gif 表情的文件夹路径，自行修改
+ file_path = "D:\\temp\\ac-gif"
+ 
+ # 取鼠标坐标 发送文件按钮
+ # 在 notebook 窗口处于聚焦的状态下
+ # （也就是本窗口需要是活动窗口，这样才能够使用快捷键操作）
+ # 鼠标移动到右侧发送文件按钮的地方
+ # 然后通过 Shift + Enter 快捷键运行此单元并前进到下一单元
+ position_send_file = pyautogui.position()
+ 
+ # 取鼠标坐标 新发的图片
+ # 在执行本条命令之前，先将一个ac娘表情（gif 图片）发送若干次，
+ # 目的是之后每次发送时，最新的消息都会出现在相同的位置（聊天窗口底部）
+ # 在 notebook 窗口处于聚焦的状态下
+ # 鼠标移动到右侧最新一条表情消息的表情图片最中央的位置
+ # 然后通过 Shift + Enter 快捷键运行此单元并前进到下一单元
+ position_new_photo = pyautogui.position()
+ 
+ # 取鼠标坐标 添加到表情
+ # 首先在上一位置（右侧最新一条表情消息的表情图片最中央的位置）右键
+ # 右键菜单，记住“添加到表情”这一选项的大致位置，最好是最中间的地方，容错率较高
+ # 然后重新令 notebook 窗口处于聚焦的状态下
+ # 鼠标移动到右侧刚刚你记住的大致位置
+ # 然后通过 Shift + Enter 快捷键运行此单元并前进到下一单元
+ position_add_emoji = pyautogui.position()
+ 
+ # 如果你刚才发送的若干次ac娘图片已经添加到自定义表情中了
+ # 注意从文件夹中删除掉这张图片，或者从自定义表情中删除掉这个表情
+ # 因为已经添加过表情的图片右键不会有“添加到表情”这一选项
+ # 程序记住的鼠标位置对应的选项会是“多选”，触发后就会阻止脚本正常工作
+ 
+ # 文件名列表是按照文件名的数字倒序排列的
+ # 这样最后添加的表情（数字较小的）会出现在自定义表情中的最前面
+ # 与 CC98 的表情排序一致
+ # 也可按照自己需求挑选或重新排序
+ file_name_list = sorted(os.listdir(file_path), key=lambda x: int(x.split(".")), reverse=True) # 所有的文件名
+ 
+ for file_name in file_name_list:
+ pyperclip.copy(os.path.join(file_path, file_name)) # 文件名拷到剪贴板
+ pyautogui.click(position_send_file) # 发送文件
+ pyautogui.hotkey('ctrl', 'v') # 粘贴到文件框
+ pyautogui.hotkey('enter') # 打开
+ pyautogui.hotkey('enter') # 发送
+ time.sleep(1) # 根据网络条件调整，未发送成功加载好的表情右键无法添加
+ pyautogui.click(position_new_photo, button='right') # 右键新发的图片
+ pyautogui.click(position_add_emoji) # 添加到表情
+ ```
+nb
+
+
+--- 回复 5 ---
+[jordonjill 的回答]
+以下是引用1楼：用户Secant在2021-04-22 10:09:42的发言：>>查看原帖<<
+# AC 娘表情包分享与批量导入方法
+
+![](http://file.cc98.org/v2-upload/lgpb00uy.gif)
+
+前一阵子有很多帖子提到了如何将 AC 娘表情包导入到微信或 QQ 中，其中涉及到表情图片的格式、背景以及批量导入方法等。
+
+由于 CC98 小程序上的 AC 娘表情包就是(https://www.cc98.org/topic/5023933/1)在 (https://www.acfun.cn/emot/)基础上处理修改的，所以为了避免大家浪费时间走弯路，我将原文件在此直接分享一下，也简单介绍一下批量导入的方法。
+
+## 🖼️ 表情图片原文件
+
+### 📁 原文件下载
+
+- (http://file.cc98.org/v2-upload/sdmiflmu.zip)
+- (http://file.cc98.org/v2-upload/civ2ecs1.zip)
+- (http://file.cc98.org/v2-upload/gxhn0zdf.eif)（双击可直接导入到 QQ）
+
+### ✨ 特点
+
+- 覆盖 (https://www.acfun.cn/emot/)所提供的下面 3 组的所有表情，共 149 个：
+ 1. (https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/acmusume.eif)
+ 2. (https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/ac_anonym.eif)
+ 3. (https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/acmusume_new.eif)
+ 
+ 备注：官网提供的(https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/ac_ow.eif)没有在 CC98 中使用，而且也不如其他三组流行度高，因此没有做处理。所有这些表情包 png 格式图片都可以(https://cdn.aixifan.com/dotnet/20130418/project/emot/package2.0/acfun_emoji.zip)
+
+- 处理后的表情提供 png 和 gif 这两种格式选择，支持透明背景，没有白色矩形背景
+
+- 表情内部做了白色填充处理，边缘做了白色描边处理，可同时用在深色和浅色模式
+
+### 🎥 示例
+
+和 CC98 小程序上的 AC 娘表情一样，就不贴图了。
+
+### ⚒️ 表情图片处理方法
+
+我并没有一张一张手动处理从官网上下载的这 149 个表情图片，而是利用了 Photoshop 的(https://helpx.adobe.com/cn/photoshop/using/creating-actions.html)和(https://sourl.cn/PjacHw)以及 (https://imagemagick.org/index.php) 的格式转换功能，具体步骤如果感兴趣的人比较多的话我就更新在这里。
+
+## 💾 批量导入方法
+
+### 🐧 QQ
+
+导入到 QQ 相对来说非常方便，你可以直接下载上面的 (http://file.cc98.org/v2-upload/gxhn0zdf.eif) 文件，然后双击即可批量导入这 149 个表情。如果你想了解如何将一张张表情图片批量导入到 QQ 中，QQ 表情管理面板已足够 self-explanatory，或者百度一下即可~
+
+不过要**注意**的是即使你导入的是具有透明背景的 png 图片，当它被 QQ 添加为表情之后，这个表情也会变成矩形白色背景。因此在你手动导入时请选择 gif 图片。
+
+### 💬 微信
+
+微信并没有批量导入表情的功能，比较快速的人工导入方法可参见 (https://www.cc98.org/user/id/618903) 写的教程帖：(https://www.cc98.org/topic/5063106)。
+
+其实基于上述人工导入方法，已有人尝试通过程序模拟鼠标操作解放人力，如：(https://www.zhihu.com/question/36939285/answer/105995868) 和 (https://simonhu-hn.github.io/2020/10/22/%E5%A6%82%E4%BD%95%E6%8A%8ATelegram%E7%9A%84sticker%E6%89%B9%E9%87%8F%E6%B7%BB%E5%8A%A0%E5%88%B0Wechat%E9%87%8C/)
+
+上面这两个文章用的是一样的代码，是借助 Jupyter Notebook 运行 Python 程序，主要利用 `pyautogui` 包控制鼠标操作来完成自动化表情导入。知乎回答有一个视频演示，由于该回答设置了禁止转载，出于尊重不再搬运视频，大家可以通过(https://video.zhihu.com/video/1220033110756196352)直接跳转到该知乎视频。
+
+简单来说，为了使用上述方法，你需要做如下工作（感谢脚本原作者，我作为搬运工再详细解释一下流程）：
+
+1. 安装 (https://www.python.org/)
+
+2. 安装必要的包：(https://pypi.org/project/PyAutoGUI/) 和 (https://pypi.org/project/pyperclip/)
+
+3. 安装 (https://jupyter.org/install)
+
+4. 下载并保存自动化代码文件，我在原代码基础上添加了很多注释，所以运行方法按照注释操作即可，源码见附录：
+ (http://file.cc98.org/v2-upload/yzzt4csi.ipynb)
+
+5. 登录 PC 微信，打开微信文件传输助手，建议利用分屏功能将文件传输助手窗口放在右半屏，将接下来要打开的 Jupyter Notebook 放在左半屏
+
+6. 在上述自动化代码文件所在目录启动 Jupyter Notebook：`jupyter notebook`，打开刚刚保存好的 `.ipynb` 文件，然后按照注释逐单元运行，其中部分语句可视情况自定义：
+ ![](http://file.cc98.org/v2-upload/ioazyo1s.png)
+
+7. 等待最后一个单元的批量添加操作运行完毕即可，但**需要注意**的是，微信提示表情成功添加完毕后不会立即更新你的自定义表情组，需要等一段时间才会陆续出现在自定义表情中，所以看到手机端还没有已经添加成功的表情时不必过于心急
+
+## 🌓 效果
+
+- 微信浅色模式：
+ ![](http://file.cc98.org/v2-upload/ugqngcgd.png)
+
+- 微信深色模式：
+ ![](http://file.cc98.org/v2-upload/pc03yirl.png)
+
+## 📝 其他
+
+为完整起见，ACFUN 官网所提供的彩色版 AC 娘动图表情 gif 文件也在这里提供一下（官网只提供 eif 格式下载）：
+
+- (http://file.cc98.org/v2-upload/2nbfhx2s.zip)
+- (http://file.cc98.org/v2-upload/botvc2w0.zip)
+
+不过 QQ 和微信都已经有正式的彩色版 AC 娘表情包提供，可直接在表情包商店搜索，大部分无需手动导入。
+
+## 🗄️ 附录
+
+- `addStickers.ipynb`:
+
+ ```json
+ {
+ "cells": ,
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": ), reverse=True) # 所有的文件名"
+ ]
+ },
+ {
+ "cell_type": "code",
+ "execution_count": null,
+ "metadata": {},
+ "outputs": [],
+ "source": 
+ }
+ ],
+ "metadata": {
+ "anaconda-cloud": {},
+ "kernelspec": {
+ "display_name": "Python 3",
+ "language": "python",
+ "name": "python3"
+ },
+ "language_info": {
+ "codemirror_mode": {
+ "name": "ipython",
+ "version": 3
+ },
+ "file_extension": ".py",
+ "mimetype": "text/x-python",
+ "name": "python",
+ "nbconvert_exporter": "python",
+ "pygments_lexer": "ipython3",
+ "version": "3.9.1"
+ }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+ }
+ ```
+
+- `addStickers.py`:
+
+ ```python
+ # 以下操作建议均单步运行（自动按键要获取鼠标位置，必须单步运行）
+ # 快捷键是 Shift+Enter
+ 
+ # 引入必要的库，如果没有这些库，请事先用 pip 等包管理工具装好
+ import os # 文件/目录读取
+ import pyautogui # 自动按键
+ import pyperclip # 操作剪贴板
+ import time # 暂停
+ 
+ # 每次动作暂停 0.5 秒（考虑到窗口的打开动画速度等，按需调整）
+ pyautogui.PAUSE = 0.5
+ 
+ # 存放 gif 表情的文件夹路径，自行修改
+ file_path = "D:\\temp\\ac-gif"
+ 
+ # 取鼠标坐标 发送文件按钮
+ # 在 notebook 窗口处于聚焦的状态下
+ # （也就是本窗口需要是活动窗口，这样才能够使用快捷键操作）
+ # 鼠标移动到右侧发送文件按钮的地方
+ # 然后通过 Shift + Enter 快捷键运行此单元并前进到下一单元
+ position_send_file = pyautogui.position()
+ 
+ # 取鼠标坐标 新发的图片
+ # 在执行本条命令之前，先将一个ac娘表情（gif 图片）发送若干次，
+ # 目的是之后每次发送时，最新的消息都会出现在相同的位置（聊天窗口底部）
+ # 在 notebook 窗口处于聚焦的状态下
+ # 鼠标移动到右侧最新一条表情消息的表情图片最中央的位置
+ # 然后通过 Shift + Enter 快捷键运行此单元并前进到下一单元
+ position_new_photo = pyautogui.position()
+ 
+ # 取鼠标坐标 添加到表情
+ # 首先在上一位置（右侧最新一条表情消息的表情图片最中央的位置）右键
+ # 右键菜单，记住“添加到表情”这一选项的大致位置，最好是最中间的地方，容错率较高
+ # 然后重新令 notebook 窗口处于聚焦的状态下
+ # 鼠标移动到右侧刚刚你记住的大致位置
+ # 然后通过 Shift + Enter 快捷键运行此单元并前进到下一单元
+ position_add_emoji = pyautogui.position()
+ 
+ # 如果你刚才发送的若干次ac娘图片已经添加到自定义表情中了
+ # 注意从文件夹中删除掉这张图片，或者从自定义表情中删除掉这个表情
+ # 因为已经添加过表情的图片右键不会有“添加到表情”这一选项
+ # 程序记住的鼠标位置对应的选项会是“多选”，触发后就会阻止脚本正常工作
+ 
+ # 文件名列表是按照文件名的数字倒序排列的
+ # 这样最后添加的表情（数字较小的）会出现在自定义表情中的最前面
+ # 与 CC98 的表情排序一致
+ # 也可按照自己需求挑选或重新排序
+ file_name_list = sorted(os.listdir(file_path), key=lambda x: int(x.split(".")), reverse=True) # 所有的文件名
+ 
+ for file_name in file_name_list:
+ pyperclip.copy(os.path.join(file_path, file_name)) # 文件名拷到剪贴板
+ pyautogui.click(position_send_file) # 发送文件
+ pyautogui.hotkey('ctrl', 'v') # 粘贴到文件框
+ pyautogui.hotkey('enter') # 打开
+ pyautogui.hotkey('enter') # 发送
+ time.sleep(1) # 根据网络条件调整，未发送成功加载好的表情右键无法添加
+ pyautogui.click(position_new_photo, button='right') # 右键新发的图片
+ pyautogui.click(position_add_emoji) # 添加到表情
+ ```

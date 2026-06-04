@@ -1,0 +1,25 @@
+【来源】CC98论坛「论坛指南」版块
+
+【标题】求问一个超链接问题
+
+【帖子正文】
+求问为什么在markdown编辑器形式下以这种形式加入超链接会出现重新跳转回到本帖子的情况，代码如下图所示（就是浏览器复制了网址再直接点击了![](https://file.cc98.org/v4-upload/d/2026/0126/zxl0d333.webp)）
+
+![](https://file.cc98.org/v4-upload/d/2026/0126/q5smlzdx.webp)
+
+![](https://file.cc98.org/v4-upload/d/2026/0126/dos1d3as.webp)
+
+
+【精选回复】（共 1 条）
+
+
+--- 回复 1 ---
+[zjjncsn 的回答]
+以下是引用1楼：用户in摸鱼在2026-01-26 19:15:31的发言：>>查看原帖<<
+求问为什么在markdown编辑器形式下以这种形式加入超链接会出现重新跳转回到本帖子的情况，代码如下图所示（就是浏览器复制了网址再直接点击了![](https://file.cc98.org/v4-upload/d/2026/0126/zxl0d333.webp)）
+
+![](https://file.cc98.org/v4-upload/d/2026/0126/q5smlzdx.webp)
+
+![](https://file.cc98.org/v4-upload/d/2026/0126/dos1d3as.webp)
+
+要显示的文本在方括号里，链接在圆括号里

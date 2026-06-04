@@ -1,0 +1,28 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】诡异的输入问题（插入中文会使前面文字消失）
+
+【帖子正文】
+最初是在用prism写论文的时候发现如果在一段文字中间插入中文，则前面一段文字会凭空消失
+https://file.cc98.org/v4-upload/d/2026/0322/je41ii3d.webp
+https://file.cc98.org/v4-upload/d/2026/0322/ln5dz32d.webp
+
+后来发现这个问题在搜索框处也有发生，不过仅限于bing和谷歌搜索框，换成别的比如百度、搜狗搜索框则不会出现这个问题
+https://file.cc98.org/v4-upload/d/2026/0322/ntnhsuri.webp
+https://file.cc98.org/v4-upload/d/2026/0322/xajcykij.webp
+
+有高手知道怎么解决吗，Gemini已经没辙了
+https://file.cc98.org/v4-upload/d/2026/0322/xryztxer.webp
+
+
+【精选回复】（共 2 条）
+
+
+--- 回复 1 ---
+[invisible8 的回答]
+是不是切成输入覆盖了 键盘上按一下insert后试试
+
+
+--- 回复 2 ---
+[zjjncsn 的回答]
+我之前在Ubuntu里用snap安装的vscode有这个问题。后面用官方的包，重新装了以后就正常了

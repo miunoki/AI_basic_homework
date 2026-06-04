@@ -1,0 +1,32 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】office激活失败
+
+【帖子正文】
+在学校网站按照流程下载office（2021LTSC），下载了激活软件，也关机重启过。但激活软件一直显示“软件授权服务报告无法激活该计算机，密钥管理服务（KMS）不可用”，错误代码是“0xC004F074”。请教大神如何处理？
+打开word、ppt、excel，虽然账户显示激活失败，但能正常使用，请问有什么影响吗？
+万分感谢！！
+
+
+【精选回复】（共 3 条）
+
+
+--- 回复 1 ---
+[浙大跑腿哥 的回答]
+参考这个文档：https://www.yuque.com/sandm-slwfb/cernetms/cutgi9g2xk7gnwyt
+
+
+--- 回复 2 ---
+[CQshui 的回答]
+https://github.com/massgravel/Microsoft-Activation-Scripts
+可尝试MAS激活
+
+
+--- 回复 3 ---
+[如花在野 的回答]
+以下是引用6楼：用户鱼片先生在2025-02-18 12:40:41的发言：>>查看原帖<<
+以下是引用4楼：用户CQshui在2025-02-18 12:09:55的发言：>>查看原帖<<
+https://github.com/massgravel/Microsoft-Activation-Scripts
+可尝试MAS激活
+谢谢！已经解决啦～！
+怎么解决的啊友友，我现在也激活失败😭

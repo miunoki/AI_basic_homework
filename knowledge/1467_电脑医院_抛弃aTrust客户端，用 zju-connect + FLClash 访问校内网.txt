@@ -1,0 +1,264 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】抛弃aTrust客户端，用 zju-connect + FLClash 访问校内网
+
+【帖子正文】
+# 抛弃 aTrust 客户端，用 zju-connect + FLClash 访问校内网
+
+## 为什么不用 aTrust 官方客户端？
+
+用过aTrust客户端的同学大概都体会过：它会接管你的路由表，强制开TUN模式把所有流量都走一遍 VPN，还会往系统里塞一堆后台进程。如果你同时在用Clash类工具做日常代理，两边抢路由表，轻则网络卡顿，重则直接断网。
+
+zju-connect 是一个开源的替代方案。它只开一个本地SOCKS5/HTTP代理端口，不碰你的路由表，不装驱动，不搞 TUN。你可以把它作为Clash的下游代理，只让校内流量走VPN，其他流量该怎么走怎么走。
+
+## 整体架构
+
+```
+你的应用 (浏览器/SSH/...)
+ │
+ ▼
+ FLClash (TUN 模式，接管全局流量)
+ │
+ ├── 校内域名/IP ──▶ zju-connect (SOCKS5 :1090) ──▶ aTrust VPN 隧道 ──▶ 校内网
+ ├── 国际流量 ──▶ 你的代理节点
+ └── 国内流量 ──▶ DIRECT
+```
+
+FLClash 负责分流，zju-connect 负责校内网隧道。两者各司其职，互不干扰。
+
+## 第一步：安装 zju-connect
+
+### 为什么必须用 aTrust 协议？
+
+zju-connect 支持两种协议：EasyConnect 和 aTrust。ZJU 的 RVPN 服务端同时提供了这两种接入方式，但 EasyConnect 协议只建立了 L4 层的 TCP 代理隧道，不支持 UDP 转发和完整的 L3 隧道。而 SSH、DNS 查询等场景依赖 L3 隧道或 UDP 通道，所以如果你需要 SSH 到校内机器，必须使用 aTrust 协议（`protocol = "atrust"`）。
+
+### 下载
+
+aTrust 协议支持目前在 beta 版本中。去 (https://github.com/mythologyli/zju-connect/releases) 下载最新的 **beta 版本**（如 `v1.0.0-beta.4`），不要用 stable 版本。
+
+macOS 用户下载后需要解除安全限制：
+
+```bash
+sudo xattr -rd com.apple.quarantine zju-connect
+```
+
+### 配置
+
+创建 `config.toml`：
+
+```toml
+protocol = "atrust"
+server_address = "rvpn.zju.edu.cn"
+server_port = 443
+username = "你的学号"
+password = "你的密码"
+
+# 端口故意避开 Clash 常用的 1080/1081
+socks_bind = ":1090"
+http_bind = ":1091"
+
+# 保持默认即可
+disable_zju_config = false
+disable_zju_dns = false
+dns_ttl = 3600
+disable_keep_alive = false
+zju_dns_server = "auto"
+secondary_dns_server = "114.114.114.114"
+debug_dump = false
+
+port_forwarding = []
+custom_dns = []
+
+# aTrust 设置
+auth_type = "auth/psw"
+login_domain = "Radius"
+client_data_file = "client_data.json"
+graph_code_file = "graph_code.jpg"
+update_best_nodes_interval = 300
+```
+
+端口选择的关键：**不要和 FLClash 撞**。FLClash 默认用 7890/1080 这些端口，所以 zju-connect 用 1090/1091。
+
+### 首次运行
+
+```bash
+./zju-connect -config config.toml
+```
+
+首次登录会自动弹出浏览器，显示一张"按顺序点击文字"的验证码图片。按提示点完提交就行。如果服务器要求短信二次验证，终端里会提示你输入收到的验证码。
+
+登录成功后，zju-connect 会把 session 信息保存到 `client_data.json`。下次启动时会自动复用，不用再过验证码。
+
+验证是否正常工作：
+
+```bash
+# 通过 zju-connect 的 SOCKS5 代理访问校内网
+curl --socks5 127.0.0.1:1090 http://10....
+```
+
+## 第二步：配置 FLClash 分流
+
+打开 FLClash，进入 覆写 (Override) 设置，添加一段 JavaScript 脚本。这段脚本做三件事：
+
+1. 把 zju-connect 注册为一个 SOCKS5 代理节点
+2. 创建一个"校园网"策略组
+3. 添加分流规则，让校内流量走 zju-connect
+
+```javascript
+function main(config, profileName) {
+ // 1) 注册 zju-connect 为代理节点
+ const zjuProxy = {
+ name: "ZJUconnect",
+ type: "socks5",
+ server: "127.0.0.1",
+ port: 1090,
+ udp: true
+ };
+
+ if (!config.proxies) config.proxies = [];
+ if (!config.proxies.some(p => p && p.name === zjuProxy.name)) {
+ config.proxies.push(zjuProxy);
+ }
+
+ // 2) 创建"校园网"策略组，可以在 DIRECT 和 ZJUconnect 之间切换
+ const campusGroup = {
+ name: "校园网",
+ type: "select",
+ proxies: 
+ };
+
+ if (!config) config = [];
+ if (!config.some(g => g && g.name === campusGroup.name)) {
+ config.push(campusGroup);
+ }
+
+ // 3) 分流规则
+ const newRules = ;
+
+ if (!config.rules) config.rules = [];
+ const existing = new Set(config.rules);
+ const prepend = newRules.filter(r => !existing.has(r));
+ config.rules = prepend.concat(config.rules);
+
+ // 4) TUN 设置：排除 zju-connect 进程，避免流量回环
+ config.tun = {
+ "auto-route": true,
+ "auto-detect-interface": true,
+ "bypass-lan": true,
+ "exclude-process": 
+ };
+
+ return config;
+}
+```
+
+保存后，在 FLClash 的策略组面板里把"校园网"切换到 `ZJUconnect`。
+
+### 几个要注意的点
+
+回环问题：zju-connect 自己需要连接 `vpn.zju.edu.cn`。如果这个连接也被 FLClash 的 TUN 捕获并转发回 zju-connect，就死循环了。上面的脚本通过两层保护解决这个问题：`DOMAIN,vpn.zju.edu.cn,DIRECT` 规则 + `exclude-process: `。
+
+bypass-lan：设为 `true`，确保访问 `127.0.0.1:1090`（zju-connect 本地端口）的流量不会被 TUN 拦截。
+
+规则顺序：`vpn.zju.edu.cn` 的 DIRECT 规则必须在 `zju.edu.cn` 的校园网规则前面。脚本里用 `prepend` 把新规则插到最前面，顺序是对的。
+
+## 第三步：验证
+
+打开终端，测试几个场景：
+
+```bash
+# 校内网站（应该走 zju-connect）
+curl -I https://www.cc98.org
+
+# SSH 到校内机器
+ssh -o ProxyCommand='nc -X 5 -x 127.0.0.1:1090 %h %p' yourname@10.x.x.x
+```
+
+如果你经常 SSH 校内机器，可以在 `~/.ssh/config` 里配好：
+
+```
+Host lab
+ HostName 10.x.x.x
+ User yourname
+ ProxyCommand nc -X 5 -x 127.0.0.1:1090 %h %p
+```
+
+之后直接 `ssh lab` 就行。
+
+## 可选：设为后台服务
+
+每次手动启动 zju-connect 比较麻烦。macOS 下可以用 launchd 把它注册为用户级服务。
+
+创建 `~/Library/LaunchAgents/com.zju-connect.agent.plist`：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+ <key>Label</key>
+ <string>com.zju-connect.agent</string>
+ <key>ProgramArguments</key>
+ <array>
+ <string>/你的路径/zju-connect</string>
+ <string>-config</string>
+ <string>/你的路径/config.toml</string>
+ </array>
+ <key>WorkingDirectory</key>
+ <string>/你的路径/</string>
+ <key>RunAtLoad</key>
+ <false/>
+ <key>KeepAlive</key>
+ <dict>
+ <key>SuccessfulExit</key>
+ <false/>
+ </dict>
+ <key>StandardOutPath</key>
+ <string>/你的路径/zju-connect.log</string>
+ <key>StandardErrorPath</key>
+ <string>/你的路径/zju-connect.log</string>
+ <key>ThrottleInterval</key>
+ <integer>10</integer>
+</dict>
+</plist>
+```
+
+管理命令：
+
+```bash
+# 加载
+launchctl load ~/Library/LaunchAgents/com.zju-connect.agent.plist
+
+# 卸载
+launchctl unload ~/Library/LaunchAgents/com.zju-connect.agent.plist
+
+# 查看状态
+launchctl list | grep zju-connect
+
+# 看日志
+tail -f /你的路径/zju-connect.log
+```
+
+`KeepAlive.SuccessfulExit = false` 表示异常退出时自动重启。`RunAtLoad = false` 表示开机不自动启动（因为首次可能需要验证码交互，建议先手动跑一次拿到 `client_data.json` 再启用服务）。
+
+Linux 用户可以用 systemd，参考项目的 (service.md)。
+
+
+【精选回复】（共 3 条）
+
+
+--- 回复 1 ---
+[躺平不内卷 的回答]
+zju connect 指路原作者：
+【电脑医院】适用于 aTrust 的 ZJU Connect 测试版已更新，支持 IDC/海宁账号登录，UDP/TUN模式 https://www.cc98.org/topic/6417741 复制本链接，打开【CC98】微信小程序，直接查看本帖！
+
+
+--- 回复 2 ---
+[晴熏白鹤 的回答]
+虽然看不懂，但我大受震撼
+
+
+--- 回复 3 ---
+[天园居士 的回答]
+虽然不懂但还是bdbd

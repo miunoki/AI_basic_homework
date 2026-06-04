@@ -1,0 +1,30 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】浙大邮箱手机登陆问题求助
+
+【帖子正文】
+https://file.cc98.org/v4-upload/d/2026/0521/rih51y3a.webp
+请问这个应该怎么办呀
+
+
+【精选回复】（共 3 条）
+
+
+--- 回复 1 ---
+[ChainsawL 的回答]
+【似水流年】求助：手机自带邮箱软件怎么登陆学校邮箱啊？ https://www.cc98.org/topic/6512051 复制本链接，打开【CC98】微信小程序，直接查看本帖！
+善用搜索
+
+
+--- 回复 2 ---
+[水果沙拉 的回答]
+浙大邮箱开启二次验证了，客户端需要使用客户端专用密码登录，信息中心有发布指南你可以参考一下：https://mail.zju.edu.cn/coremail/help/2fa_zh_CN.html。按你的情况就是下面两张图操作：
+https://file.cc98.org/v4-upload/d/2026/0522/lcd0swdp.webp
+https://file.cc98.org/v4-upload/d/2026/0522/uwfcdz4s.webp
+
+
+--- 回复 3 ---
+[水果沙拉 的回答]
+浙大邮箱开启二次验证了，客户端需要使用客户端专用密码登录，信息中心有发布指南你可以参考一下：https://mail.zju.edu.cn/coremail/help/2fa_zh_CN.html。按你的情况就是下面两张图操作：
+https://file.cc98.org/v4-upload/d/2026/0522/lcd0swdp.webp
+https://file.cc98.org/v4-upload/d/2026/0522/iotumquh.webp

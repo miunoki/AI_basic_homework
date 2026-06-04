@@ -1,0 +1,24 @@
+【来源】CC98论坛「电脑医院」版块
+
+【标题】电脑打不开学在浙大和学院官网
+
+【帖子正文】
+求助 为什么只有电脑打不开 关了梯子也不行 但是手机可以正常打开 换了zjuwlan和secure都无济于事
+
+
+【精选回复】（共 3 条）
+
+
+--- 回复 1 ---
+[yuan_gq8 的回答]
+在cmd查一下ipconfig /all | findstr /i "dns"，然后改回来就行netsh interface ip set dns "WLAN" source=dhcp
+
+
+--- 回复 2 ---
+[zjjncsn 的回答]
+【电脑医院】一些网络问题的一些解决方案（tag: WiFi 图标消失 代理服务器 DNS ZJUWLAN Secure） https://www.cc98.org/topic/6356515 复制本链接，打开【CC98】微信小程序，直接查看本帖！
+
+
+--- 回复 3 ---
+[零陆 的回答]
+去网络设置里面看看ip和DNS是不是变成手动的了，都改成自动试试
