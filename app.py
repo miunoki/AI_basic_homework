@@ -244,4 +244,4 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(theme=THEME, css=CSS)
+    demo.launch(theme=THEME, css=CSS, inbrowser=True)
