@@ -245,14 +245,49 @@ def get_api_status():
 
 # ===== 对话逻辑 =====
 
+def content_to_text(content):
+    """把 Gradio 可能返回的结构化消息内容转成纯文本。"""
+    if content is None:
+        return ""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "\n".join(content_to_text(item) for item in content)
+    if isinstance(content, dict):
+        if content.get("type") == "text" and "text" in content:
+            return content_to_text(content["text"])
+        for key in ("content", "text", "value"):
+            if key in content:
+                return content_to_text(content[key])
+        return str(content)
+    return str(content)
+
+
+def normalize_chat_history(history):
+    """兼容 Gradio messages/tuples 格式，统一成 role/content 字符串列表。"""
+    normalized = []
+    for item in history or []:
+        if isinstance(item, dict):
+            role = item.get("role")
+            content = content_to_text(item.get("content", ""))
+            if role in ("user", "assistant") and content:
+                normalized.append({"role": role, "content": content})
+        elif isinstance(item, (list, tuple)) and len(item) >= 2:
+            user_text = content_to_text(item[0])
+            assistant_text = content_to_text(item[1])
+            if user_text:
+                normalized.append({"role": "user", "content": user_text})
+            if assistant_text:
+                normalized.append({"role": "assistant", "content": assistant_text})
+    return normalized
+
+
 def handle_chat(history, message, auth_state):
     """处理一轮对话：添加用户消息 + 调用 LLM 生成回复。"""
-    history = list(history) if history else []
-    message = message.strip()
+    history = normalize_chat_history(history)
+    message = (message or "").strip()
     if not message:
         return history, ""
-    if not isinstance(history, list):
-        history = []
 
     history.append({"role": "user", "content": message})
 
@@ -280,7 +315,7 @@ def handle_chat(history, message, auth_state):
     try:
         reply = chat(messages)
     except Exception as e:
-        reply = f"❌ **调用失败**：{e}\n\n请检查 API Key 是否正确、账户是否有余额。"
+        reply = f"❌ **调用失败**：{e}\n\n请检查 API Key、账户余额、网络连接，或联系维护者查看后台日志。"
 
     history.append({"role": "assistant", "content": reply})
     return history, ""
