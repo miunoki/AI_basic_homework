@@ -28,7 +28,7 @@
 | 功能 | 说明 | 状态 |
 |------|------|------|
 | 知识库 | 约 3640 条 CC98 论坛帖子，覆盖 9 个版块，运行时加载 3643 个知识条目 | ✅ |
-| 关键词检索 | 中文 2-gram 分词 + Jaccard 相似度 + 标题加权 | ✅ |
+| 关键词检索 | 校园同义词扩展 + 中文 2-gram 分词 + Jaccard 相似度 + 主题词标题加权 | ✅ |
 | 语义检索（进阶） | sentence-transformers 向量嵌入 + 余弦相似度，含缓存与自动回退 | ✅ |
 | RAG 检索增强 | 检索相关帖子 → 拼接 Prompt → DeepSeek 生成回答 | ✅ |
 | 多轮对话 | 上下文记忆，连续追问不丢失；追问时自动增强检索查询 | ✅ |
@@ -48,7 +48,7 @@
 
 选用经典 RAG（检索增强生成）架构，核心流程：
 
-1. **检索**：用户问题经 2-gram 中文分词后，在 3643 条知识条目中进行 Jaccard 相似度匹配（或 sentence-transformers 语义向量检索），召回 top-8 相关帖子
+1. **检索**：用户问题先经过校园同义词扩展，再经 2-gram 中文分词后，在 3643 条知识条目中进行 Jaccard 相似度匹配（或 sentence-transformers 语义向量检索），召回 top-8 相关帖子
 2. **增强**：选取前 4 条相关帖子拼接成结构化 Prompt，注入 System Prompt 和来源标注信息
 3. **生成**：调用 DeepSeek `deepseek-chat` 模型，基于检索资料生成口语化、有据可依的回答
 4. **对话管理**：多轮对话中保存历史上下文，追问时自动用上一轮问题增强检索查询
@@ -176,7 +176,7 @@ python compare.py
 在 `main.py` 中修改：
 
 ```python
-RETRIEVAL_MODE = "keyword"   # 关键词检索，启动快，无需额外模型
+RETRIEVAL_MODE = "keyword"   # 同义词扩展 + 关键词检索，启动快，无需额外模型
 RETRIEVAL_MODE = "semantic"  # 语义向量检索，需 sentence-transformers，首次需下载模型
 ```
 
