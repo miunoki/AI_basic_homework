@@ -1,4 +1,5 @@
-"""校园智能问答助手 —— Gradio 网页聊天界面（美化版 + API 配置）。"""
+"""校园智能问答助手 —— Gradio 网页聊天界面（美化版 + 访问码/API 配置）。"""
+import os
 import gradio as gr
 from llm import chat, init_client, is_configured
 from retriever import load_knowledge, retrieve
@@ -103,38 +104,141 @@ def build_prompt(question, related):
 chunks = load_knowledge()
 print(f"知识库已加载（{len(chunks)} 个知识条目），检索模式: {RETRIEVAL_MODE}")
 
+SERVER_API_CONFIGURED = is_configured()
 
-# ===== API 配置逻辑 =====
+
+# ===== 访问码 / API 配置逻辑 =====
+
+
+def get_access_code():
+    """从环境变量或 config.py 读取统一访问码。"""
+    code = os.getenv("ACCESS_CODE", "").strip()
+    if code:
+        return code
+    try:
+        from config import ACCESS_CODE
+        return str(ACCESS_CODE).strip()
+    except (ImportError, AttributeError):
+        return ""
+
+
+ACCESS_CODE = get_access_code()
+
+
+def empty_auth_state():
+    return {
+        "access_granted": False,
+        "personal_key_configured": False,
+    }
+
+
+def submit_access(access_code, api_key, auth_state):
+    """访问码和个人 API Key 双通道入口。个人 API Key 优先。"""
+    auth_state = dict(auth_state or empty_auth_state())
+    access_code = (access_code or "").strip()
+    key = (api_key or "").strip()
+
+    if key:
+        if len(key) < 10 or not key.startswith("sk-"):
+            return (
+                gr.Markdown("❌ **API Key 格式不正确**（应以 `sk-` 开头）"),
+                gr.Accordion(open=True),
+                auth_state,
+            )
+        try:
+            ok = init_client(key)
+            if ok:
+                auth_state["personal_key_configured"] = True
+                return (
+                    gr.Markdown("✅ **个人 API Key 配置成功**，无需访问码，可以开始对话。"),
+                    gr.Accordion(open=False),
+                    auth_state,
+                )
+            return gr.Markdown("❌ **API Key 配置失败，请重试**"), gr.Accordion(open=True), auth_state
+        except Exception as e:
+            return gr.Markdown(f"❌ **连接失败**：{e}"), gr.Accordion(open=True), auth_state
+
+    if access_code:
+        if not ACCESS_CODE:
+            return (
+                gr.Markdown("❌ **服务端尚未配置访问码**。请改用个人 DeepSeek API Key，或联系维护者。"),
+                gr.Accordion(open=True),
+                auth_state,
+            )
+        if access_code != ACCESS_CODE:
+            return gr.Markdown("❌ **访问码不正确，请检查后重试。**"), gr.Accordion(open=True), auth_state
+        auth_state["access_granted"] = True
+        if SERVER_API_CONFIGURED:
+            return (
+                gr.Markdown("✅ **访问码验证成功**，将使用项目方配置的服务端 API。"),
+                gr.Accordion(open=False),
+                auth_state,
+            )
+        return (
+            gr.Markdown("⚠️ **访问码正确，但服务端未配置 API Key。** 请改用个人 DeepSeek API Key。"),
+            gr.Accordion(open=True),
+            auth_state,
+        )
+
+    return (
+        gr.Markdown("⚠️ **请输入访问码，或输入你自己的 DeepSeek API Key。**"),
+        gr.Accordion(open=True),
+        auth_state,
+    )
+
+
+def get_start_status(auth_state):
+    """页面加载时显示进入方式说明。"""
+    auth_state = dict(auth_state or empty_auth_state())
+    if auth_state.get("personal_key_configured"):
+        return gr.Markdown("✅ **个人 API Key 已配置**，可以开始对话。"), gr.Accordion(open=False), auth_state
+    if auth_state.get("access_granted") and SERVER_API_CONFIGURED:
+        return gr.Markdown("✅ **访问码已验证**，可以开始对话。"), gr.Accordion(open=False), auth_state
+    if SERVER_API_CONFIGURED:
+        return (
+            gr.Markdown("ℹ️ **有访问码的新生可输入访问码使用；已有 DeepSeek API Key 的用户可直接输入 Key。**"),
+            gr.Accordion(open=True),
+            auth_state,
+        )
+    return (
+        gr.Markdown("⚠️ **服务端未配置 API Key。** 请输入个人 DeepSeek API Key，或联系维护者配置服务端 Key。"),
+        gr.Accordion(open=True),
+        auth_state,
+    )
+
+
+def can_chat(auth_state):
+    auth_state = dict(auth_state or empty_auth_state())
+    return auth_state.get("personal_key_configured") or (
+        auth_state.get("access_granted") and SERVER_API_CONFIGURED
+    )
+
+
+def missing_access_message():
+    if SERVER_API_CONFIGURED:
+        return (
+            "⚠️ **请先输入访问码或个人 API Key。**\n\n"
+            "有访问码的新生可以在上方输入访问码开始使用；已有 DeepSeek API Key 的用户可以直接输入自己的 Key，无需访问码。"
+        )
+    return (
+        "⚠️ **请先输入个人 DeepSeek API Key。**\n\n"
+        "当前服务端未配置项目方 API Key，访问码无法直接调用模型。"
+    )
+
 
 def save_api_key(api_key):
-    """保存用户输入的 API Key 并初始化客户端。"""
-    if not api_key or not api_key.strip():
-        if is_configured():
-            return gr.Markdown("✅ **API 已配置**（当前使用已有密钥）"), gr.Accordion(open=False)
-        return gr.Markdown("❌ **请输入有效的 API Key**"), gr.Accordion(open=True)
-    key = api_key.strip()
-    if len(key) < 10 or not key.startswith("sk-"):
-        return gr.Markdown("❌ **API Key 格式不正确**（应以 `sk-` 开头）"), gr.Accordion(open=True)
-    try:
-        ok = init_client(key)
-        if ok:
-            return gr.Markdown("✅ **API Key 配置成功！** 可以开始对话了"), gr.Accordion(open=False)
-        else:
-            return gr.Markdown("❌ **配置失败，请重试**"), gr.Accordion(open=True)
-    except Exception as e:
-        return gr.Markdown(f"❌ **连接失败**：{e}"), gr.Accordion(open=True)
+    """兼容旧的 API Key 配置入口。"""
+    return submit_access("", api_key, empty_auth_state())
 
 
 def get_api_status():
-    """页面加载时检测 API 状态。"""
-    if is_configured():
-        return gr.Markdown("✅ **API 已配置**（从配置文件自动加载）"), gr.Accordion(open=False)
-    return gr.Markdown("⚠️ **尚未配置 API Key**，请在下方输入你的 DeepSeek API Key"), gr.Accordion(open=True)
+    """兼容旧的页面加载状态入口。"""
+    return get_start_status(empty_auth_state())
 
 
 # ===== 对话逻辑 =====
 
-def handle_chat(history, message):
+def handle_chat(history, message, auth_state):
     """处理一轮对话：添加用户消息 + 调用 LLM 生成回复。"""
     history = list(history) if history else []
     message = message.strip()
@@ -145,8 +249,8 @@ def handle_chat(history, message):
 
     history.append({"role": "user", "content": message})
 
-    if not is_configured():
-        history.append({"role": "assistant", "content": "⚠️ **请先配置 API Key！**\n\n点击上方「⚙️ API 配置」展开设置面板，输入你的 DeepSeek API Key 后点击「保存配置」。\n\n> 申请地址：https://platform.deepseek.com/api_keys"})
+    if not can_chat(auth_state):
+        history.append({"role": "assistant", "content": missing_access_message()})
         return history, ""
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -168,23 +272,33 @@ def handle_chat(history, message):
 # ===== 界面构建 =====
 
 with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
+    auth_state = gr.State(empty_auth_state())
     gr.HTML(HEADER_HTML)
 
-    # ━━━━ API 配置区 ━━━━
-    api_accordion = gr.Accordion("⚙️ API 配置", open=not is_configured(), elem_classes="api-accordion")
+    # ━━━━ 开始使用区 ━━━━
+    api_accordion = gr.Accordion("⚙️ 开始使用", open=True, elem_classes="api-accordion")
     with api_accordion:
         api_status = gr.Markdown("")
+        gr.Markdown(
+            "有访问码的新生：输入访问码开始使用。已有 DeepSeek API Key：可直接输入 API Key，无需访问码。"
+        )
         with gr.Row(elem_classes="api-row"):
+            access_code_input = gr.Textbox(
+                label="访问码",
+                placeholder="输入课程/项目方提供的访问码",
+                type="password",
+                scale=3,
+            )
             api_key_input = gr.Textbox(
-                label="DeepSeek API Key",
+                label="个人 DeepSeek API Key（可选）",
                 placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                 type="password",
-                scale=6,
+                scale=4,
             )
-            save_btn = gr.Button("🔑 保存配置", variant="primary", scale=1, min_width=120)
+            save_btn = gr.Button("开始使用", variant="primary", scale=1, min_width=120)
         gr.Markdown(
-            "> 💡 在 [DeepSeek 开放平台](https://platform.deepseek.com/api_keys) 注册并创建 API Key，"
-            "粘贴到上方输入框后点击「保存配置」。Key 仅在当前会话有效，不会被存储到磁盘。"
+            "> 若同时填写访问码和个人 API Key，将优先使用个人 API Key。"
+            "个人 Key 仅在当前会话有效，不会被存储到磁盘。"
         )
 
     # ━━━━ 聊天区 ━━━━
@@ -223,23 +337,27 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
 
     # ━━━━ 事件绑定 ━━━━
 
-    demo.load(fn=get_api_status, outputs=[api_status, api_accordion])
+    demo.load(
+        fn=get_start_status,
+        inputs=auth_state,
+        outputs=[api_status, api_accordion, auth_state],
+    )
 
     save_btn.click(
-        fn=save_api_key,
-        inputs=api_key_input,
-        outputs=[api_status, api_accordion],
+        fn=submit_access,
+        inputs=[access_code_input, api_key_input, auth_state],
+        outputs=[api_status, api_accordion, auth_state],
     )
 
     msg.submit(
         fn=handle_chat,
-        inputs=[chatbot, msg],
+        inputs=[chatbot, msg, auth_state],
         outputs=[chatbot, msg],
     )
 
     send_btn.click(
         fn=handle_chat,
-        inputs=[chatbot, msg],
+        inputs=[chatbot, msg, auth_state],
         outputs=[chatbot, msg],
     )
 

@@ -35,7 +35,7 @@
 | 幻觉抑制 | 知识库外问题如实说不知道，不编造 | ✅ |
 | 来源标注（进阶） | 回答末尾标注参考帖子标题 | ✅ |
 | 命令行界面 | 交互式 CLI 问答 | ✅ |
-| Gradio 网页（进阶） | 可视化聊天界面，含 API Key 配置面板 | ✅ |
+| Gradio 网页（进阶） | 可视化聊天界面，支持访问码或个人 API Key 两种进入方式 | ✅ |
 | 对比实验（进阶） | 12 题 RAG vs 纯大模型效果对比，输出量化报告 | ✅ |
 
 ---
@@ -61,7 +61,7 @@
 大作业/
 ├── README.md                # 本文件（项目文档）
 ├── requirements.txt         # Python 依赖
-├── config.example.py        # 配置文件模板
+├── config.py                # 本地配置文件（不提交，可配置 API Key / 访问码）
 ├── .gitignore               # Git 忽略规则
 ├── llm.py                  # DeepSeek API 封装
 ├── retriever.py            # 知识库加载与检索（关键词 + 语义双模式）
@@ -82,7 +82,7 @@
 - **操作系统**：Windows / macOS / Linux 均可
 - **Python**：建议 3.10+（命令行模式在 3.13 下也可运行）
 - **网络**：调用 DeepSeek API 需要联网
-- **API Key**：在 [DeepSeek 开放平台](https://platform.deepseek.com) 注册获取
+- **API Key**：维护者可配置服务端 DeepSeek API Key；已有个人 Key 的用户也可在网页内临时输入
 - **可选**：语义检索首次运行需要访问 HuggingFace 下载模型（约 120MB）
 
 ### 4.2 安装依赖
@@ -97,19 +97,23 @@ pip install -r requirements.txt
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-### 4.3 配置 API Key
+### 4.3 配置 API Key 与访问码
 
-```bash
-copy config.example.py config.py
-```
-
-编辑 `config.py`，填入 DeepSeek API Key：
+在项目根目录创建 `config.py`，维护者可填入服务端 DeepSeek API Key 和统一访问码：
 
 ```python
 DEEPSEEK_API_KEY = "你的 DeepSeek API Key"
+ACCESS_CODE = "给新生使用的访问码"
 ```
 
-> ⚠️ `config.py` 已被 `.gitignore` 忽略。提交时只提交 `config.example.py`，不要提交真实密钥。网页模式下也可在界面内临时输入 Key。
+也可以通过环境变量配置：
+
+```bash
+set DEEPSEEK_API_KEY=你的 DeepSeek API Key
+set ACCESS_CODE=给新生使用的访问码
+```
+
+> ⚠️ `config.py` 已被 `.gitignore` 忽略，不要提交真实密钥或访问码。网页模式下，已有个人 Key 的用户也可在界面内临时输入 Key，无需访问码。
 
 ---
 
@@ -144,7 +148,17 @@ python main.py
 python app.py
 ```
 
-浏览器打开 `http://127.0.0.1:7860`，支持可视化聊天、API Key 实时配置、示例问题一键提问。
+或在 Windows 下双击：
+
+```bash
+start_web.bat
+```
+
+浏览器会自动打开 `http://127.0.0.1:7860`。网页支持两种进入方式：
+
+- **新生**：输入项目方提供的访问码，使用服务端配置的 API。
+- **已有 DeepSeek API Key 的用户**：直接输入个人 API Key，无需访问码。
+- 如果同时填写访问码和个人 API Key，优先使用个人 API Key。
 
 ### 5.3 对比实验
 
@@ -175,7 +189,8 @@ RETRIEVAL_MODE = "semantic"  # 语义向量检索，需 sentence-transformers，
 |------|------|---------|
 | `No such file or directory: main.py` | 当前目录不是项目目录 | `cd` 到项目根目录 |
 | `No module named openai` | 依赖未安装 | `pip install -r requirements.txt` |
-| 未找到 API Key | `config.py` 未配置 | 复制 `config.example.py` 为 `config.py` 并填写 Key |
+| 未找到 API Key | 服务端未配置 Key，且网页内未输入个人 Key | 维护者配置 `DEEPSEEK_API_KEY`，或用户在网页内输入个人 Key |
+| 访问码不正确 | 输入的访问码与维护者配置不一致 | 检查 `ACCESS_CODE` 或联系维护者 |
 | 知识库加载 0 条 | `knowledge/` 文件夹缺失 | 确认 `knowledge/` 与 `main.py` 在同一目录下 |
 | 网页打不开 | `app.py` 未运行或端口不同 | 查看终端输出的 local URL |
 | 语义检索下载失败 | 网络无法访问 HuggingFace | 改用 `RETRIEVAL_MODE = "keyword"` |
