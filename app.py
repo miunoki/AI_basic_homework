@@ -5,6 +5,9 @@ from llm import chat, init_client, is_configured
 from retriever import load_knowledge, retrieve
 
 RETRIEVAL_MODE = "keyword"
+RETRIEVAL_TOP_K = 8
+PROMPT_TOP_K = 4
+MAX_SOURCE_CHARS = 900
 THEME = gr.themes.Soft(
     primary_hue="blue",
     secondary_hue="slate",
@@ -92,17 +95,20 @@ FOOTER_HTML = """
 
 def build_prompt(question, related):
     parts = []
-    for i, c in enumerate(related[:2], 1):
+    for i, c in enumerate(related[:PROMPT_TOP_K], 1):
         text = c["text"]
-        if len(text) > 1500:
-            text = text[:1500] + "\n...(内容过长，已截断)"
+        if len(text) > MAX_SOURCE_CHARS:
+            text = text[:MAX_SOURCE_CHARS] + "\n...(内容过长，已截断)"
         parts.append(f"参考帖子 {i}:\n{text}")
     refs = "\n\n---\n\n".join(parts)
     return f"【参考帖子】\n{refs}\n\n【用户问题】{question}"
 
 
 chunks = load_knowledge()
-print(f"知识库已加载（{len(chunks)} 个知识条目），检索模式: {RETRIEVAL_MODE}")
+print(
+    f"知识库已加载（{len(chunks)} 个知识条目），检索模式: {RETRIEVAL_MODE}，"
+    f"召回 top-{RETRIEVAL_TOP_K}，Prompt 引用 top-{PROMPT_TOP_K}"
+)
 
 SERVER_API_CONFIGURED = is_configured()
 
@@ -256,7 +262,12 @@ def handle_chat(history, message, auth_state):
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for h in history[:-1]:
         messages.append({"role": h["role"], "content": h["content"]})
-    related = retrieve(message, chunks, mode=RETRIEVAL_MODE)
+    related = retrieve(
+        message,
+        chunks,
+        top_k=RETRIEVAL_TOP_K,
+        mode=RETRIEVAL_MODE,
+    )
     prompt = build_prompt(message, related)
     messages.append({"role": "user", "content": prompt})
 

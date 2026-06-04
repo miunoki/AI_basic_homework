@@ -48,8 +48,8 @@
 
 选用经典 RAG（检索增强生成）架构，核心流程：
 
-1. **检索**：用户问题经 2-gram 中文分词后，在 3643 条知识条目中进行 Jaccard 相似度匹配（或 sentence-transformers 语义向量检索），返回 top-2 最相关帖子
-2. **增强**：将检索到的帖子内容与用户问题拼接成结构化 Prompt，注入 System Prompt 和来源标注信息
+1. **检索**：用户问题经 2-gram 中文分词后，在 3643 条知识条目中进行 Jaccard 相似度匹配（或 sentence-transformers 语义向量检索），召回 top-8 相关帖子
+2. **增强**：选取前 4 条相关帖子拼接成结构化 Prompt，注入 System Prompt 和来源标注信息
 3. **生成**：调用 DeepSeek `deepseek-chat` 模型，基于检索资料生成口语化、有据可依的回答
 4. **对话管理**：多轮对话中保存历史上下文，追问时自动用上一轮问题增强检索查询
 
@@ -179,6 +179,8 @@ python compare.py
 RETRIEVAL_MODE = "keyword"   # 关键词检索，启动快，无需额外模型
 RETRIEVAL_MODE = "semantic"  # 语义向量检索，需 sentence-transformers，首次需下载模型
 ```
+
+默认配置为召回 top-8 相关帖子，并将前 4 条写入 Prompt。这样比只引用 top-2 覆盖更多经验帖，同时通过单条截断控制 Prompt 长度。
 
 语义检索首次初始化约 1-2 分钟，后续从缓存加载可秒级启动。若 HuggingFace 不可访问，系统自动回退关键词模式。
 
