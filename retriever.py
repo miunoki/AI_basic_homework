@@ -92,6 +92,8 @@ BROAD_TITLE_TOKENS = {
     "yq", "西溪", "华家池", "之江", "海宁", "宿舍", "寝室", "住宿",
 }
 
+KEYWORD_MIN_SCORE = 50.0
+
 
 def _expand_query(query):
     """基于校园生活同义词表扩展检索 query。"""
@@ -154,8 +156,8 @@ def load_knowledge(folder="knowledge"):
     return chunks
 
 
-def retrieve_keyword(query, chunks, top_k=3):
-    """关键词检索：同义词扩展 + 2-gram + Jaccard + 标题加权。"""
+def score_keyword_chunks(query, chunks):
+    """返回关键词检索的打分结果，按分数从高到低排序。"""
     expanded_query = _expand_query(query)
     matched_topic_groups = _matched_topic_groups(query)
     original_tokens = _filter_query_tokens(_tokenize(query))
@@ -191,7 +193,17 @@ def retrieve_keyword(query, chunks, top_k=3):
             + phrase_bonus * 0.5
         )
 
-    return sorted(chunks, key=score, reverse=True)[:top_k]
+    return sorted(
+        ((score(chunk), chunk) for chunk in chunks),
+        key=lambda item: item[0],
+        reverse=True,
+    )
+
+
+def retrieve_keyword(query, chunks, top_k=3, min_score=KEYWORD_MIN_SCORE):
+    """关键词检索：同义词扩展 + 2-gram + Jaccard + 标题加权 + 低相关过滤。"""
+    ranked = score_keyword_chunks(query, chunks)
+    return [chunk for score, chunk in ranked if score >= min_score][:top_k]
 
 
 # ===== 语义向量检索 =====

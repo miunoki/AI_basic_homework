@@ -8,6 +8,7 @@ RETRIEVAL_MODE = "keyword"
 RETRIEVAL_TOP_K = 8
 PROMPT_TOP_K = 4
 MAX_SOURCE_CHARS = 900
+NO_RELEVANT_ANSWER = "抱歉，资料库中暂未找到相关信息。"
 THEME = gr.themes.Soft(
     primary_hue="blue",
     secondary_hue="slate",
@@ -268,6 +269,11 @@ def handle_chat(history, message, auth_state):
         top_k=RETRIEVAL_TOP_K,
         mode=RETRIEVAL_MODE,
     )
+
+    if not related:
+        history.append({"role": "assistant", "content": NO_RELEVANT_ANSWER})
+        return history, ""
+
     prompt = build_prompt(message, related)
     messages.append({"role": "user", "content": prompt})
 

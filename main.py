@@ -18,6 +18,7 @@ RETRIEVAL_MODE = "keyword"  # "keyword" | "semantic"
 RETRIEVAL_TOP_K = 8
 PROMPT_TOP_K = 4
 MAX_SOURCE_CHARS = 900
+NO_RELEVANT_ANSWER = "抱歉，资料库中暂未找到相关信息。"
 
 
 def build_prompt(question, related, show_sources=True):
@@ -95,6 +96,23 @@ def main():
             top_k=RETRIEVAL_TOP_K,
             mode=RETRIEVAL_MODE
         )
+
+        if not related:
+            answer = NO_RELEVANT_ANSWER
+            history.append(
+                {
+                    "role": "user",
+                    "content": question
+                }
+            )
+            history.append(
+                {
+                    "role": "assistant",
+                    "content": answer
+                }
+            )
+            print(f"\n助手：{answer}\n")
+            continue
 
         user_msg = build_prompt(
             question,
