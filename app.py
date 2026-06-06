@@ -104,6 +104,41 @@ chunks = load_knowledge()
 print(f"知识库已加载（{len(chunks)} 个知识条目），检索模式: {RETRIEVAL_MODE}")
 
 
+def format_retrieval_info(related, query):
+    """将检索结果格式化为可视化 HTML 卡片。"""
+    if not related:
+        return '<div style="color: #94a3b8; font-size: 0.9rem;">暂未检索到相关知识条目。</div>'
+
+    cards = []
+    for i, c in enumerate(related, 1):
+        title = c.get("title") or c.get("source", f"条目 {i}")
+        display_score = c.get("display_score", 0)
+        raw_score = c.get("relevance_score", 0)
+        preview = c["text"][:200].replace("\n", " ")
+        source = c.get("source", "")
+
+        # 匹配度颜色
+        if display_score >= 0.8:
+            badge_color = "#16a34a"
+        elif display_score >= 0.5:
+            badge_color = "#ca8a04"
+        else:
+            badge_color = "#64748b"
+
+        card = f"""<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-bottom:8px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <span style="font-weight:600;color:#0D47A1;font-size:0.9rem">#{i} {title}</span>
+    <span style="background:{badge_color}15;color:{badge_color};border:1px solid {badge_color}30;padding:1px 10px;border-radius:10px;font-size:0.75rem;font-weight:600">{raw_score}</span>
+  </div>
+  <div style="color:#475569;font-size:0.82rem;line-height:1.6">{preview}...</div>
+  <div style="margin-top:4px;font-size:0.72rem;color:#94a3b8">📁 {source}</div>
+</div>"""
+        cards.append(card)
+
+    query_html = f'<div style="margin-bottom:10px;color:#475569;font-size:0.85rem">🔍 检索查询：<code style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:0.85rem">{query}</code></div>'
+    return query_html + "\n".join(cards)
+
+
 # ===== API 配置逻辑 =====
 
 def save_api_key(api_key):
@@ -135,11 +170,11 @@ def get_api_status():
 # ===== 对话逻辑 =====
 
 def handle_chat(history, message):
-    """处理一轮对话：添加用户消息 + 调用 LLM 生成回复。"""
+    """处理一轮对话：添加用户消息 + 调用 LLM 生成回复 + 返回检索详情。"""
     history = list(history) if history else []
     message = message.strip()
     if not message:
-        return history, ""
+        return history, "", ""
     if not isinstance(history, list):
         history = []
 
@@ -147,7 +182,7 @@ def handle_chat(history, message):
 
     if not is_configured():
         history.append({"role": "assistant", "content": "⚠️ **请先配置 API Key！**\n\n点击上方「⚙️ API 配置」展开设置面板，输入你的 DeepSeek API Key 后点击「保存配置」。\n\n> 申请地址：https://platform.deepseek.com/api_keys"})
-        return history, ""
+        return history, "", ""
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for h in history[:-1]:
@@ -161,8 +196,9 @@ def handle_chat(history, message):
     except Exception as e:
         reply = f"❌ **调用失败**：{e}\n\n请检查 API Key 是否正确、账户是否有余额。"
 
+    retrieval_html = format_retrieval_info(related, message)
     history.append({"role": "assistant", "content": reply})
-    return history, ""
+    return history, "", retrieval_html
 
 
 # ===== 界面构建 =====
@@ -195,6 +231,10 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
         height=500,
         scale=1,
     )
+
+    # ━━━━ 检索详情区 ━━━━
+    with gr.Accordion("📄 检索详情", open=False):
+        retrieval_display = gr.HTML(value="💡 发送问题后，此处将展示检索到的知识条目及匹配度")
 
     with gr.Row(elem_classes="input-row"):
         msg = gr.Textbox(
@@ -234,13 +274,13 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
     msg.submit(
         fn=handle_chat,
         inputs=[chatbot, msg],
-        outputs=[chatbot, msg],
+        outputs=[chatbot, msg, retrieval_display],
     )
 
     send_btn.click(
         fn=handle_chat,
         inputs=[chatbot, msg],
-        outputs=[chatbot, msg],
+        outputs=[chatbot, msg, retrieval_display],
     )
 
 if __name__ == "__main__":

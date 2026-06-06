@@ -47,10 +47,10 @@ def load_knowledge(folder="knowledge"):
 
 
 def retrieve_keyword(query, chunks, top_k=3):
-    """关键词检索：2-gram + Jaccard + 标题加权。"""
+    """关键词检索：2-gram + Jaccard + 标题加权，返回的 chunk 附带 relevance_score。"""
     q_tokens = _tokenize(query)
 
-    def score(chunk):
+    def compute_score(chunk):
         text = chunk["text"]
         title_tokens = _tokenize(chunk.get("title", ""))
         body_tokens = _tokenize(text)
@@ -60,9 +60,24 @@ def retrieve_keyword(query, chunks, top_k=3):
         else:
             jaccard = 0
         phrase_bonus = sum(1 for t in q_tokens if len(t) >= 2 and t in text)
-        return title_hits * 10 + jaccard * 3 + phrase_bonus * 0.5
+        return title_hits * 10 + jaccard * 3 + phrase_bonus * 0.5, jaccard, title_hits, phrase_bonus
 
-    return sorted(chunks, key=score, reverse=True)[:top_k]
+    scored = [(compute_score(chunk), chunk) for chunk in chunks]
+    scored.sort(key=lambda x: x[0][0], reverse=True)
+    top = scored[:top_k]
+
+    # 为 top_k 结果附上分数（浅拷贝，不污染原始数据）
+    result = []
+    max_score = top[0][0][0] if top else 1
+    for (total, jaccard, title_hits, phrase_bonus), chunk in top:
+        c = dict(chunk)
+        c["relevance_score"] = round(total, 2)
+        c["jaccard"] = round(jaccard, 4)
+        c["title_hits"] = title_hits
+        # 归一化 0-1 显示用
+        c["display_score"] = round(total / max_score, 4) if max_score > 0 else 0
+        result.append(c)
+    return result
 
 
 # ===== 语义向量检索 =====
@@ -123,7 +138,7 @@ class SemanticRetriever:
         return False
 
     def search(self, query, top_k=3):
-        """语义检索：余弦相似度排序。"""
+        """语义检索：余弦相似度排序，返回的 chunk 附带 relevance_score。"""
         if self.embeddings is None:
             return retrieve_keyword(query, self.chunks, top_k)
 
@@ -138,7 +153,15 @@ class SemanticRetriever:
 
         ranked = sorted(zip(scores, self.chunks),
                         key=lambda x: x[0], reverse=True)
-        return [c for _, c in ranked[:top_k]]
+        top = ranked[:top_k]
+        result = []
+        max_score = top[0][0] if top else 1
+        for score_val, chunk in top:
+            c = dict(chunk)
+            c["relevance_score"] = round(float(score_val), 4)
+            c["display_score"] = round(float(score_val / max_score), 4) if max_score > 0 else 0
+            result.append(c)
+        return result
 
 
 # ===== 统一检索接口 =====
