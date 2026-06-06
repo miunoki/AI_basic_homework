@@ -11,6 +11,7 @@ import time
 from llm import chat
 from retriever import load_knowledge, retrieve
 from main import (
+    append_sources,
     build_prompt,
     SYSTEM_PROMPT,
     RETRIEVAL_MODE,
@@ -47,7 +48,7 @@ def ask_with_kb(question, chunks):
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user_msg},
     ]
-    return chat(messages)
+    return append_sources(chat(messages), related)
 
 
 def ask_without_kb(question):
