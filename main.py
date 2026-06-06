@@ -2,6 +2,11 @@
 
 from llm import chat
 from retriever import load_knowledge, retrieve
+from context_utils import (
+    build_context_query,
+    empty_context_state,
+    update_context_state,
+)
 
 SYSTEM_PROMPT = """你是浙江大学「校园生活助手」，专门为新生解答校园生活中的各种问题。
 你的知识全部来自 CC98 论坛上浙大学生们的真实讨论和经验分享。
@@ -85,6 +90,7 @@ def main():
             "content": SYSTEM_PROMPT
         }
     ]
+    retrieval_context = empty_context_state()
 
     while True:
         question = input("你：").strip()
@@ -97,17 +103,7 @@ def main():
             continue
 
         # ===== 上下文增强检索 =====
-        search_query = question
-
-        if len(history) >= 3:
-            try:
-                last_question = history[-2]["content"]
-
-                if len(question) <= 15:
-                    search_query = last_question + " " + question
-
-            except Exception:
-                pass
+        search_query = build_context_query(question, retrieval_context)
 
         related = retrieve(
             search_query,
@@ -145,7 +141,9 @@ def main():
             }
         ]
 
-        answer = append_sources(chat(messages), related)
+        raw_answer = chat(messages)
+        answer = append_sources(raw_answer, related)
+        retrieval_context = update_context_state(question, related, raw_answer)
 
         history.append(
             {

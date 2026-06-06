@@ -1,6 +1,11 @@
 """校园智能问答助手 —— Gradio 网页聊天界面（美化版 + 访问码/API 配置）。"""
 import os
 import gradio as gr
+from context_utils import (
+    build_context_query,
+    empty_context_state,
+    update_context_state,
+)
 from llm import chat, init_client, is_configured
 from retriever import load_knowledge, retrieve
 
@@ -308,24 +313,26 @@ def normalize_chat_history(history):
     return normalized
 
 
-def handle_chat(history, message, auth_state):
+def handle_chat(history, message, auth_state, retrieval_context):
     """处理一轮对话：添加用户消息 + 调用 LLM 生成回复。"""
     history = normalize_chat_history(history)
+    retrieval_context = dict(empty_context_state(), **(retrieval_context or {}))
     message = (message or "").strip()
     if not message:
-        return history, ""
+        return history, "", retrieval_context
 
     history.append({"role": "user", "content": message})
 
     if not can_chat(auth_state):
         history.append({"role": "assistant", "content": missing_access_message()})
-        return history, ""
+        return history, "", retrieval_context
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for h in history[:-1]:
         messages.append({"role": h["role"], "content": h["content"]})
+    search_query = build_context_query(message, retrieval_context)
     related = retrieve(
-        message,
+        search_query,
         chunks,
         top_k=RETRIEVAL_TOP_K,
         mode=RETRIEVAL_MODE,
@@ -333,24 +340,27 @@ def handle_chat(history, message, auth_state):
 
     if not related:
         history.append({"role": "assistant", "content": NO_RELEVANT_ANSWER})
-        return history, ""
+        return history, "", retrieval_context
 
     prompt = build_prompt(message, related)
     messages.append({"role": "user", "content": prompt})
 
     try:
-        reply = append_sources(chat(messages), related)
+        raw_reply = chat(messages)
+        reply = append_sources(raw_reply, related)
+        retrieval_context = update_context_state(message, related, raw_reply)
     except Exception as e:
         reply = f"❌ **调用失败**：{e}\n\n请检查 API Key、账户余额、网络连接，或联系维护者查看后台日志。"
 
     history.append({"role": "assistant", "content": reply})
-    return history, ""
+    return history, "", retrieval_context
 
 
 # ===== 界面构建 =====
 
 with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
     auth_state = gr.State(empty_auth_state())
+    retrieval_context = gr.State(empty_context_state())
     gr.HTML(HEADER_HTML)
 
     # ━━━━ 开始使用区 ━━━━
@@ -429,14 +439,14 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
 
     msg.submit(
         fn=handle_chat,
-        inputs=[chatbot, msg, auth_state],
-        outputs=[chatbot, msg],
+        inputs=[chatbot, msg, auth_state, retrieval_context],
+        outputs=[chatbot, msg, retrieval_context],
     )
 
     send_btn.click(
         fn=handle_chat,
-        inputs=[chatbot, msg, auth_state],
-        outputs=[chatbot, msg],
+        inputs=[chatbot, msg, auth_state, retrieval_context],
+        outputs=[chatbot, msg, retrieval_context],
     )
 
 if __name__ == "__main__":
