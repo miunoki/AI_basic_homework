@@ -141,7 +141,16 @@ def main():
             }
         ]
 
-        raw_answer = chat(messages)
+        try:
+            raw_answer = chat(messages)
+        except Exception as exc:
+            print(
+                "\n助手：调用模型失败："
+                f"{exc}\n"
+                "请检查 API Key、账户余额和网络连接，然后重试。\n"
+            )
+            continue
+
         answer = append_sources(raw_answer, related)
         retrieval_context = update_context_state(question, related, raw_answer)
 
