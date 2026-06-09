@@ -122,12 +122,12 @@ CSS = """
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 """
 
-HEADER_HTML = """
+HEADER_HTML_TEMPLATE = """
 <div class="header-bar">
     <h1>🎓 浙大新生入学指南 · 智能问答助手</h1>
     <p>基于 CC98 论坛真实帖子，用 RAG 检索增强生成，为新生提供可靠的校园生活解答</p>
     <div class="header-tags">
-        <span>📚 3640 条知识条目</span>
+        <span>📚 {knowledge_count} 条知识条目</span>
         <span>🔍 RAG 检索增强</span>
         <span>🤖 DeepSeek 驱动</span>
         <span>🏫 9 大校园版块</span>
@@ -371,6 +371,7 @@ def format_debug_info(original_question, search_query, debug_rows):
 
 
 chunks = load_knowledge()
+HEADER_HTML = HEADER_HTML_TEMPLATE.format(knowledge_count=len(chunks))
 print(
     f"知识库已加载（{len(chunks)} 个知识条目），检索模式: {RETRIEVAL_MODE}，"
     f"召回 top-{RETRIEVAL_TOP_K}，Prompt 引用 top-{PROMPT_TOP_K}"
