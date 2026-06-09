@@ -6,6 +6,7 @@
 """
 import os
 import glob
+import hashlib
 import re
 import pickle
 
@@ -99,6 +100,17 @@ BROAD_TITLE_TOKENS = {
 }
 
 KEYWORD_MIN_SCORE = 50.0
+SEMANTIC_MIN_SCORE = 0.35
+
+
+def _knowledge_fingerprint(chunks):
+    """根据知识条目的来源和内容生成稳定指纹，用于校验向量缓存。"""
+    digest = hashlib.sha256()
+    for chunk in chunks:
+        for key in ("source", "title", "text"):
+            digest.update(str(chunk.get(key, "")).encode("utf-8"))
+            digest.update(b"\0")
+    return digest.hexdigest()
 
 
 def is_query_in_scope(query):
@@ -268,6 +280,7 @@ class SemanticRetriever:
         with open(self.cache_path, "wb") as f:
             pickle.dump({
                 "model_name": self.model_name,
+                "knowledge_fingerprint": _knowledge_fingerprint(chunks),
                 "embeddings": self.embeddings,
             }, f)
         print(f"  向量缓存已保存到 {self.cache_path}")
@@ -280,6 +293,8 @@ class SemanticRetriever:
                 with open(self.cache_path, "rb") as f:
                     data = pickle.load(f)
                 if data.get("model_name") == self.model_name and \
+                   data.get("knowledge_fingerprint") == \
+                   _knowledge_fingerprint(chunks) and \
                    len(data["embeddings"]) == len(chunks):
                     self.embeddings = data["embeddings"]
                     print(f"  已从缓存加载 {len(self.embeddings)} 条向量")
@@ -288,7 +303,7 @@ class SemanticRetriever:
                 pass
         return False
 
-    def search(self, query, top_k=3):
+    def search(self, query, top_k=3, min_score=SEMANTIC_MIN_SCORE):
         """语义检索：余弦相似度排序。"""
         if self.embeddings is None:
             return retrieve_keyword(query, self.chunks, top_k)
@@ -304,7 +319,7 @@ class SemanticRetriever:
 
         ranked = sorted(zip(scores, self.chunks),
                         key=lambda x: x[0], reverse=True)
-        return [c for _, c in ranked[:top_k]]
+        return [c for score, c in ranked if score >= min_score][:top_k]
 
 
 # ===== 统一检索接口 =====
