@@ -6,7 +6,7 @@ from context_utils import (
     empty_context_state,
     update_context_state,
 )
-from llm import chat, create_client, is_configured
+from llm import chat, is_configured, user_error_message, validate_api_key
 from retriever import (
     KEYWORD_MIN_SCORE,
     is_query_in_scope,
@@ -406,6 +406,8 @@ def submit_access(access_code, api_key, auth_state):
     key = (api_key or "").strip()
 
     if key:
+        auth_state["personal_key_configured"] = False
+        auth_state["personal_api_key"] = ""
         if len(key) < 10 or not key.startswith("sk-"):
             return (
                 gr.Markdown("❌ **API Key 格式不正确**（应以 `sk-` 开头）"),
@@ -413,7 +415,7 @@ def submit_access(access_code, api_key, auth_state):
                 auth_state,
             )
         try:
-            create_client(key)
+            validate_api_key(key)
             auth_state["personal_key_configured"] = True
             auth_state["personal_api_key"] = key
             return (
@@ -422,7 +424,11 @@ def submit_access(access_code, api_key, auth_state):
                 auth_state,
             )
         except Exception as e:
-            return gr.Markdown(f"❌ **连接失败**：{e}"), gr.Accordion(open=True), auth_state
+            return (
+                gr.Markdown(f"❌ **验证失败**：{user_error_message(e)}"),
+                gr.Accordion(open=True),
+                auth_state,
+            )
 
     if access_code:
         if not ACCESS_CODE:
@@ -602,7 +608,10 @@ def handle_chat(history, message, auth_state, retrieval_context, example_state):
         reply = append_sources(raw_reply, related)
         retrieval_context = update_context_state(message, related, raw_reply)
     except Exception as e:
-        reply = f"❌ **调用失败**：{e}\n\n请检查 API Key、账户余额、网络连接，或联系维护者查看后台日志。"
+        reply = (
+            f"❌ **调用失败**：{user_error_message(e)}\n\n"
+            "如果问题持续出现，请联系维护者查看后台日志。"
+        )
 
     history.append({"role": "assistant", "content": reply})
     return (

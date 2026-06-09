@@ -33,6 +33,29 @@ def create_client(api_key):
     return OpenAI(api_key=api_key, base_url=BASE_URL)
 
 
+def validate_api_key(api_key):
+    """通过无需生成文本的模型列表接口验证 API Key。"""
+    client = create_client(api_key)
+    client.models.list()
+    return client
+
+
+def user_error_message(exc):
+    """把 SDK 异常转换为适合向普通用户展示的安全提示。"""
+    status_code = getattr(exc, "status_code", None)
+    error_name = type(exc).__name__.lower()
+
+    if status_code in (401, 403) or "authentication" in error_name:
+        return "API Key 无效或没有访问权限，请检查后重新输入。"
+    if status_code == 402:
+        return "API 账户余额不足，请充值后重试。"
+    if status_code == 429 or "ratelimit" in error_name:
+        return "API 请求过于频繁，请稍后再试。"
+    if "timeout" in error_name or "connection" in error_name:
+        return "无法连接 API 服务，请检查网络后重试。"
+    return "API 服务暂时不可用，请稍后重试。"
+
+
 def is_configured():
     return _client is not None
 
