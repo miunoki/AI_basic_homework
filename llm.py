@@ -7,6 +7,10 @@ MAX_RETRIES = 2
 _client = None
 
 
+class ConfigurationError(RuntimeError):
+    """本地运行配置缺失。"""
+
+
 def _get_api_key():
     """尝试从 config.py 或环境变量读取 API Key。"""
     try:
@@ -52,6 +56,8 @@ def user_error_message(exc):
     status_code = getattr(exc, "status_code", None)
     error_name = type(exc).__name__.lower()
 
+    if isinstance(exc, ConfigurationError):
+        return "未配置 DeepSeek API Key，请先完成配置。"
     if status_code in (401, 403) or "authentication" in error_name:
         return "API Key 无效或没有访问权限，请检查后重新输入。"
     if status_code == 402:
@@ -94,11 +100,11 @@ def _clean_messages(messages):
     ]
 
 
-def chat(messages, model="deepseek-chat", temperature=0.7,
+def chat(messages, model="deepseek-chat", temperature=0.3,
          api_key=None, **kwargs):
     client = create_client(api_key) if api_key else _client
     if client is None:
-        raise RuntimeError("请先在网页中配置 API Key（点击「API 配置」展开设置）。")
+        raise ConfigurationError("未配置 DeepSeek API Key")
     messages = _clean_messages(messages)
     resp = client.chat.completions.create(
         model=model, messages=messages, temperature=temperature, **kwargs

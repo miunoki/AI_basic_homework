@@ -11,6 +11,13 @@ import re
 import pickle
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+RETRIEVAL_MODES = {"keyword", "semantic"}
+
+
+def get_retrieval_mode():
+    """从环境变量读取统一检索模式，无效值回退到关键词检索。"""
+    mode = os.getenv("RETRIEVAL_MODE", "keyword").strip().lower()
+    return mode if mode in RETRIEVAL_MODES else "keyword"
 
 
 def _project_path(path):

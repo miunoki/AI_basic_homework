@@ -10,17 +10,21 @@ from context_utils import (
 from llm import chat, is_configured, user_error_message, validate_api_key
 from retriever import (
     KEYWORD_MIN_SCORE,
+    get_retrieval_mode,
     is_query_in_scope,
     load_knowledge,
     retrieve,
     score_keyword_chunks,
 )
 
-RETRIEVAL_MODE = "keyword"
+RETRIEVAL_MODE = get_retrieval_mode()
 RETRIEVAL_TOP_K = 8
 PROMPT_TOP_K = 4
 MAX_SOURCE_CHARS = 900
-NO_RELEVANT_ANSWER = "抱歉，资料库中暂未找到相关信息。"
+NO_RELEVANT_ANSWER = (
+    "抱歉，资料库中暂未找到相关信息。"
+    "建议咨询学校相关部门或通过浙大官方渠道确认。"
+)
 DEBUG_EMPTY_MESSAGE = "发送问题后，这里会显示实际检索 query、召回来源和相关度分数。"
 VISIBLE_EXAMPLE_COUNT = 5
 EXAMPLE_QUESTIONS = [
