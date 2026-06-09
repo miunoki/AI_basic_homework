@@ -3,7 +3,6 @@ import requests
 import re
 import os
 import time
-import json
 
 # ===== 配置 =====
 # ACCESS_TOKEN 请从环境变量 CC98_ACCESS_TOKEN 读取，或在这里填入你的 Token
@@ -22,15 +21,14 @@ def _load_token():
 ACCESS_TOKEN = _load_token()
 if ACCESS_TOKEN and not ACCESS_TOKEN.startswith("Bearer "):
     ACCESS_TOKEN = "Bearer " + ACCESS_TOKEN
-if not ACCESS_TOKEN:
-    ACCESS_TOKEN = "Bearer 在此填入你的CC98_ACCESS_TOKEN"
 
 HEADERS = {
-    "Authorization": ACCESS_TOKEN,
     "Accept": "application/json",
     "Origin": "https://www.cc98.org",
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 }
+if ACCESS_TOKEN:
+    HEADERS["Authorization"] = ACCESS_TOKEN
 
 API_BASE = "https://api.cc98.org"
 OUTPUT_DIR = "knowledge_cc98"
@@ -84,19 +82,45 @@ def clean_bbcode(text):
 
 def api_get(path, params=None, retries=3):
     """封装 API 调用，带重试。"""
+    if not ACCESS_TOKEN:
+        raise RuntimeError(
+            "未配置 CC98_ACCESS_TOKEN，请在 config.py 或环境变量中设置后重试。"
+        )
+
     url = f"{API_BASE}{path}"
-    if params:
-        qs = "&".join(f"{k}={v}" for k, v in params.items())
-        url = f"{url}?{qs}"
     for attempt in range(retries):
         try:
-            resp = requests.get(url, headers=HEADERS, timeout=15)
+            resp = requests.get(
+                url,
+                params=params,
+                headers=HEADERS,
+                timeout=15,
+            )
             if resp.status_code == 200:
                 return resp.json()
-            print(f"  API {resp.status_code}: {url} (attempt {attempt+1})")
-        except Exception as e:
-            print(f"  Error: {e} (attempt {attempt+1})")
-        time.sleep(1 + attempt)
+            if resp.status_code in (401, 403):
+                raise RuntimeError(
+                    "CC98 Access Token 无效或已过期，请重新获取后重试。"
+                )
+
+            print(
+                f"  API {resp.status_code}: {resp.url} "
+                f"(attempt {attempt + 1})"
+            )
+            retry_after = resp.headers.get("Retry-After")
+            wait_seconds = (
+                float(retry_after)
+                if retry_after and retry_after.isdigit()
+                else 1 + attempt
+            )
+        except RuntimeError:
+            raise
+        except (requests.RequestException, ValueError) as e:
+            print(f"  Error: {e} (attempt {attempt + 1})")
+            wait_seconds = 1 + attempt
+
+        if attempt < retries - 1:
+            time.sleep(wait_seconds)
     return None
 
 
@@ -172,8 +196,12 @@ def sort_topics_by_value(topics):
 
 
 def main():
+    if not ACCESS_TOKEN:
+        raise RuntimeError(
+            "未配置 CC98_ACCESS_TOKEN，请在 config.py 或环境变量中设置后重试。"
+        )
+
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    all_chunks = []
     entry_num = 0
 
     for board_id, board_name in TARGET_BOARDS.items():
@@ -208,7 +236,6 @@ def main():
                 continue
 
             text = format_post_as_qa(topic, posts)
-            all_chunks.append(text)
 
             # 直接保存为独立文件
             entry_num += 1
