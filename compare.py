@@ -1,11 +1,3 @@
-'''
-Author: miunoki 13567781025@163.com
-Date: 2026-05-26 23:22:38
-LastEditors: miunoki 13567781025@163.com
-LastEditTime: 2026-06-03 11:39:53
-FilePath: \AI_basic_homework\compare.py
-Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
-'''
 """对比实验：带知识库(RAG) vs 不带知识库。"""
 import time
 from llm import chat
@@ -60,22 +52,25 @@ def ask_without_kb(question):
     return chat(messages)
 
 
-def judge_quality(question, answer):
-    """简单评判回答质量。"""
-    hallu_keywords = ["编造", "幻觉", "不确定", "可能"]
+def run_case(answer_func):
+    """执行单项实验，避免一次 API 异常中断整场对比。"""
+    started_at = time.time()
+    try:
+        return answer_func(), time.time() - started_at, ""
+    except Exception as exc:
+        return "", time.time() - started_at, str(exc)
+
+
+def classify_result(answer, error=""):
+    """只标记可客观判断的状态，回答质量留给人工核验。"""
+    if error:
+        return "调用失败"
+
     refuse_keywords = ["抱歉", "未找到", "不知道", "没有相关信息"]
-
     has_refuse = any(kw in answer for kw in refuse_keywords)
-    has_hallu = any(kw in answer for kw in hallu_keywords)
-    has_detail = len(answer) > 50
-
-    if has_refuse and not has_detail:
-        return "未回答"
-    elif has_hallu and not has_detail:
-        return "可能幻觉"
-    elif has_detail:
-        return "有效回答"
-    return "质量一般"
+    if has_refuse:
+        return "已拒答"
+    return "待人工核验"
 
 
 def main():
@@ -88,28 +83,29 @@ def main():
     for i, q in enumerate(TEST_QUESTIONS, 1):
         print(f"\n[{i}/{len(TEST_QUESTIONS)}] Q: {q}")
 
-        # 带知识库
-        t0 = time.time()
-        a_kb = ask_with_kb(q, chunks)
-        t_kb = time.time() - t0
+        a_kb, t_kb, error_kb = run_case(
+            lambda: ask_with_kb(q, chunks)
+        )
+        a_no, t_no, error_no = run_case(
+            lambda: ask_without_kb(q)
+        )
 
-        # 不带知识库
-        t1 = time.time()
-        a_no = ask_without_kb(q)
-        t_no = time.time() - t1
+        q_kb = classify_result(a_kb, error_kb)
+        q_no = classify_result(a_no, error_no)
+        display_kb = a_kb or error_kb
+        display_no = a_no or error_no
 
-        q_kb = judge_quality(q, a_kb)
-        q_no = judge_quality(q, a_no)
-
-        print(f"  [RAG] ({t_kb:.1f}s) [{q_kb}] {a_kb[:120]}...")
-        print(f"  [无KB] ({t_no:.1f}s) [{q_no}] {a_no[:120]}...")
+        print(f"  [RAG] ({t_kb:.1f}s) [{q_kb}] {display_kb[:120]}...")
+        print(f"  [无KB] ({t_no:.1f}s) [{q_no}] {display_no[:120]}...")
 
         results.append({
             "question": q,
             "rag_answer": a_kb,
             "no_kb_answer": a_no,
-            "rag_quality": q_kb,
-            "no_kb_quality": q_no,
+            "rag_status": q_kb,
+            "no_kb_status": q_no,
+            "rag_error": error_kb,
+            "no_kb_error": error_no,
             "rag_time": t_kb,
             "no_kb_time": t_no,
         })
@@ -120,51 +116,23 @@ def main():
     print("\n" + "=" * 80)
     print("对比实验总结")
     print("=" * 80)
-    rag_good = sum(1 for r in results if r["rag_quality"] == "有效回答")
-    no_good = sum(1 for r in results if r["no_kb_quality"] == "有效回答")
-    rag_refuse = sum(1 for r in results if r["rag_quality"] == "未回答")
-    no_refuse = sum(1 for r in results if r["no_kb_quality"] == "未回答")
-    rag_hallu = sum(1 for r in results if r["rag_quality"] == "可能幻觉")
-    no_hallu = sum(1 for r in results if r["no_kb_quality"] == "可能幻觉")
+    rag_review = sum(1 for r in results if r["rag_status"] == "待人工核验")
+    no_review = sum(1 for r in results if r["no_kb_status"] == "待人工核验")
+    rag_refuse = sum(1 for r in results if r["rag_status"] == "已拒答")
+    no_refuse = sum(1 for r in results if r["no_kb_status"] == "已拒答")
+    rag_failed = sum(1 for r in results if r["rag_status"] == "调用失败")
+    no_failed = sum(1 for r in results if r["no_kb_status"] == "调用失败")
 
     print(f"{'':<20} {'RAG(带知识库)':<20} {'无知识库':<20}")
-    print(f"{'有效回答':<20} {rag_good:<20} {no_good:<20}")
-    print(f"{'未回答':<20} {rag_refuse:<20} {no_refuse:<20}")
-    print(f"{'可能幻觉':<20} {rag_hallu:<20} {no_hallu:<20}")
+    print(f"{'待人工核验':<20} {rag_review:<20} {no_review:<20}")
+    print(f"{'已拒答':<20} {rag_refuse:<20} {no_refuse:<20}")
+    print(f"{'调用失败':<20} {rag_failed:<20} {no_failed:<20}")
     print(f"{'平均耗时':<20} {sum(r['rag_time'] for r in results)/len(results):.1f}s{'':<13} {sum(r['no_kb_time'] for r in results)/len(results):.1f}s")
 
-    # 结论
-    print("\n结论：")
-    print(f"  RAG 有效回答率: {rag_good}/{len(TEST_QUESTIONS)} = {rag_good/len(TEST_QUESTIONS)*100:.0f}%")
-    print(f"  无KB有效回答率: {no_good}/{len(TEST_QUESTIONS)} = {no_good/len(TEST_QUESTIONS)*100:.0f}%")
-    if rag_good > no_good:
-        print("  → 带知识库的RAG回答质量显著优于不带知识库的通用大模型。")
-    if rag_refuse > no_refuse:
-        print("  → RAG更诚实：找不到资料时如实告知，而非像通用模型那样容易编造。")
-    if no_hallu > rag_hallu:
-        print("  → RAG有效抑制了幻觉：基于真实帖子回答，大幅减少编造。")
-
-    # 保存报告
-    with open("docs/对比实验报告.md", "w", encoding="utf-8") as f:
-        f.write("# 对比实验报告：带知识库(RAG) vs 不带知识库\n\n")
-        f.write(
-            f"测试问题数：{len(TEST_QUESTIONS)} | "
-            f"检索模式：{RETRIEVAL_MODE} | 召回 top-{RETRIEVAL_TOP_K}\n\n"
-        )
-        f.write("## 逐题对比\n\n")
-        for r in results:
-            f.write(f"### Q: {r['question']}\n\n")
-            f.write(f"**RAG（带知识库）** [{r['rag_quality']}]：\n> {r['rag_answer'][:300]}\n\n")
-            f.write(f"**无知识库** [{r['no_kb_quality']}]：\n> {r['no_kb_answer'][:300]}\n\n")
-            f.write("---\n\n")
-        f.write("## 汇总\n\n")
-        f.write(f"| 指标 | RAG | 无KB |\n|---|---|---|\n")
-        f.write(f"| 有效回答 | {rag_good} | {no_good} |\n")
-        f.write(f"| 未回答 | {rag_refuse} | {no_refuse} |\n")
-        f.write(f"| 可能幻觉 | {rag_hallu} | {no_hallu} |\n")
-        f.write(f"\n**结论**：RAG检索增强能有效提升回答质量，减少幻觉，提供有据可依的校园指导。\n")
-
-    print("\n详细对比报告已保存到 docs/对比实验报告.md")
+    print("\n说明：")
+    print("  脚本只记录可客观识别的拒答和调用失败。")
+    print("  回答是否准确、是否有依据，需要结合参考来源人工核验。")
+    print("  本次运行不会自动写入或覆盖 docs 中的报告。")
 
 
 if __name__ == "__main__":
