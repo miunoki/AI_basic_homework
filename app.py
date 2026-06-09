@@ -9,6 +9,7 @@ from context_utils import (
 from llm import chat, init_client, is_configured
 from retriever import (
     KEYWORD_MIN_SCORE,
+    is_query_in_scope,
     load_knowledge,
     retrieve,
     score_keyword_chunks,
@@ -258,6 +259,9 @@ def update_examples_after_use(example_state, message):
 
 def retrieve_with_debug(query):
     """执行检索并返回调试信息，避免调试面板和正式检索结果不一致。"""
+    if not is_query_in_scope(query):
+        return [], []
+
     if RETRIEVAL_MODE == "keyword":
         ranked = score_keyword_chunks(query, chunks)
         accepted = [

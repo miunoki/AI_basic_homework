@@ -81,6 +81,12 @@ TOPIC_SYNONYM_GROUPS = [
 SYNONYM_GROUPS = LOCATION_SYNONYM_GROUPS + TOPIC_SYNONYM_GROUPS
 TOPIC_BOOST_GROUPS = TOPIC_SYNONYM_GROUPS
 
+CAMPUS_SCOPE_TERMS = (
+    "浙大", "浙江大学", "学校", "校园", "校内", "校区", "学院",
+    "紫金港", "玉泉", "西溪", "华家池", "之江", "海宁",
+    "附近", "周边",
+)
+
 QUERY_STOP_TOKENS = {
     "请问", "求问", "有没有", "有没", "没有", "哪里", "哪儿", "在哪",
     "怎么", "么用", "如何", "什么", "有什", "么办", "咋办", "为什",
@@ -93,6 +99,22 @@ BROAD_TITLE_TOKENS = {
 }
 
 KEYWORD_MIN_SCORE = 50.0
+
+
+def is_query_in_scope(query):
+    """判断问题是否属于校园生活知识库覆盖范围。"""
+    query = (query or "").strip()
+    if not query:
+        return False
+
+    query_lower = query.lower()
+    if any(
+        any(term.lower() in query_lower for term in group)
+        for group in TOPIC_SYNONYM_GROUPS
+    ):
+        return True
+
+    return any(term.lower() in query_lower for term in CAMPUS_SCOPE_TERMS)
 
 
 def _expand_query(query):
@@ -202,6 +224,9 @@ def score_keyword_chunks(query, chunks):
 
 def retrieve_keyword(query, chunks, top_k=3, min_score=KEYWORD_MIN_SCORE):
     """关键词检索：同义词扩展 + 2-gram + Jaccard + 标题加权 + 低相关过滤。"""
+    if not is_query_in_scope(query):
+        return []
+
     ranked = score_keyword_chunks(query, chunks)
     return [chunk for score, chunk in ranked if score >= min_score][:top_k]
 
@@ -293,7 +318,8 @@ def retrieve(query, chunks, top_k=3, mode="keyword"):
     mode: "keyword" | "semantic"
     如果 semantic 模式初始化失败（如 HuggingFace 不可访问），自动回退 keyword。
     """
-    expanded_query = _expand_query(query)
+    if not is_query_in_scope(query):
+        return []
 
     if mode == "semantic" and HAS_SBERT:
         global _semantic_retriever
@@ -302,7 +328,7 @@ def retrieve(query, chunks, top_k=3, mode="keyword"):
                 _semantic_retriever = SemanticRetriever()
                 if not _semantic_retriever.load_cache(chunks):
                     _semantic_retriever.build_index(chunks)
-            return _semantic_retriever.search(expanded_query, top_k)
+            return _semantic_retriever.search(_expand_query(query), top_k)
         except Exception as e:
             print(f"  [语义检索初始化失败: {e}]")
             print(f"  [自动回退到关键词模式]")
