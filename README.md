@@ -21,22 +21,22 @@
 
 ### 1.2 解决方案
 
-本项目基于**检索增强生成（RAG）**技术，构建了一个面向浙大新生的智能问答助手。系统从 CC98 论坛爬取了 9 个核心版块约 3640 条真实帖子构建知识库，用户提问时先检索最相关的帖子，再交给 DeepSeek 大模型基于这些真实资料生成回答，做到**准确、有据可依、来源可追溯**。
+本项目基于**检索增强生成（RAG）**技术，构建了一个面向浙大新生的智能问答助手。系统从 CC98 论坛 9 个校园相关版块整理出 3643 个文本知识条目，用户提问时先检索最相关的帖子，再交给 DeepSeek 大模型基于这些真实资料生成回答，做到**准确、有据可依、来源可追溯**。
 
 ### 1.3 核心功能
 
 | 功能 | 说明 | 状态 |
 |------|------|------|
-| 知识库 | 约 3640 条 CC98 论坛帖子，覆盖 9 个版块，运行时加载 3643 个知识条目 | ✅ |
+| 知识库 | 3643 个 CC98 论坛文本知识条目，覆盖 9 个版块 | ✅ |
 | 关键词检索 | 校园同义词扩展 + 中文 2-gram 分词 + Jaccard 相似度 + 标题加权 + 低相关阈值 | ✅ |
 | 语义检索（进阶） | sentence-transformers 向量嵌入 + 余弦相似度，含缓存与自动回退 | ✅ |
 | RAG 检索增强 | 检索相关帖子 → 拼接 Prompt → DeepSeek 生成回答 | ✅ |
 | 多轮对话 | 上下文记忆，连续追问不丢失；追问时自动拼接上一轮问题、来源标题和回答摘要增强检索 | ✅ |
-| 幻觉抑制 | 知识库外问题如实说不知道，不编造 | ✅ |
+| 幻觉抑制 | 知识库外问题拒绝编造，并建议通过学校相关部门或官方渠道确认 | ✅ |
 | 来源标注（进阶） | 程序根据实际检索结果在回答末尾追加参考帖子标题 | ✅ |
 | 命令行界面 | 交互式 CLI 问答 | ✅ |
 | Gradio 网页（进阶） | 可视化聊天界面，支持访问码或个人 API Key、可轮换示例问题和检索调试折叠面板 | ✅ |
-| 对比实验（进阶） | 12 题 RAG vs 纯大模型效果对比，输出量化报告 | ✅ |
+| 对比实验（进阶） | 离线检索基准 + 配置 API Key 后的 RAG/纯模型逐题对比 | ✅ |
 
 ---
 
@@ -73,7 +73,6 @@
 ├── scrape_cc98.py           # CC98 论坛爬虫
 ├── knowledge/              # 知识库文本文件（3643 条）
 └── docs/                   # 技术栈、实验报告、分工说明、答辩 PPT
-    └── 技术栈.md             # 当前技术方案与技术变更记录
 ```
 
 ---
@@ -109,9 +108,16 @@ DEEPSEEK_API_KEY = "你的 DeepSeek API Key"
 ACCESS_CODE = "给新生使用的访问码"
 ```
 
-也可以通过环境变量配置：
+也可以通过环境变量配置。PowerShell：
 
-```bash
+```powershell
+$env:DEEPSEEK_API_KEY="你的 DeepSeek API Key"
+$env:ACCESS_CODE="给新生使用的访问码"
+```
+
+Windows CMD：
+
+```bat
 set DEEPSEEK_API_KEY=你的 DeepSeek API Key
 set ACCESS_CODE=给新生使用的访问码
 ```
@@ -142,7 +148,7 @@ python main.py
 |------|---------|
 | 图书馆怎么预约？ | 基于帖子给出预约网址、签到规则、违约惩罚等具体信息 |
 | 预约后多久签到？ | 基于上下文理解"预约"指图书馆预约，回答半小时内签到 |
-| 苹果手机和华为哪个好？ | 知识库无此内容，回答"暂未找到相关信息"，不编造 |
+| 苹果手机和华为哪个好？ | 知识库无此内容，拒绝编造并建议通过学校相关部门或官方渠道确认 |
 | 校医院牙科怎么样？ | 引用多个帖子，给出医生评价、费用、预约难度等综合信息 |
 
 ### 5.2 Gradio 网页模式
@@ -169,20 +175,30 @@ start_web.bat
 python compare.py
 ```
 
-测试 12 个校园生活问题，逐题对比"带知识库 RAG"与"不带知识库纯大模型"的回答质量，输出量化统计和详细报告。
+该脚本始终先运行无需 API Key 的离线检索基准；配置 `DEEPSEEK_API_KEY` 后，还会逐题输出“带知识库 RAG”和“不带知识库纯大模型”的回答，供人工比较事实依据、校园针对性和来源可追溯性。
+
+当前关键词检索离线基准结果：
+
+- 校园问题 Top-3 命中：11/11（100%）
+- 知识库外问题正确拒绝：5/5（100%）
+
+> 离线基准用于验证检索与边界判断，不等同于对生成回答质量的自动评分。在线回答对比需要有效的 DeepSeek API Key，并由人工结合帖子内容审阅。
 
 ---
 
 ## 六、检索模式
 
-在 `main.py` 中修改：
+通过环境变量切换检索模式，无需修改源码。PowerShell：
 
-```python
-RETRIEVAL_MODE = "keyword"   # 同义词扩展 + 关键词检索，启动快，无需额外模型
-RETRIEVAL_MODE = "semantic"  # 语义向量检索，需 sentence-transformers，首次需下载模型
+```powershell
+$env:RETRIEVAL_MODE="keyword"
+python main.py
+
+$env:RETRIEVAL_MODE="semantic"
+python main.py
 ```
 
-默认配置为召回 top-8 相关帖子，并将前 4 条写入 Prompt。关键词检索会过滤低于 50 分的弱相关结果；如果没有候选帖子，系统会直接返回“资料库中暂未找到相关信息”，不再调用模型硬答。
+可选值为 `keyword` 和 `semantic`；未设置或填写无效值时自动回退为 `keyword`。默认召回 top-8 相关帖子，并将前 4 条写入 Prompt。关键词检索会过滤低于 50 分的弱相关结果；如果没有候选帖子，系统会直接拒答并给出官方咨询建议，不再调用模型硬答。
 
 语义检索首次初始化约 1-2 分钟，后续从缓存加载可秒级启动。若 HuggingFace 不可访问，系统自动回退关键词模式。
 
@@ -196,14 +212,16 @@ RETRIEVAL_MODE = "semantic"  # 语义向量检索，需 sentence-transformers，
 | `No module named openai` | 依赖未安装 | `pip install -r requirements.txt` |
 | 未找到 API Key | 服务端未配置 Key，且网页内未输入个人 Key | 维护者配置 `DEEPSEEK_API_KEY`，或用户在网页内输入个人 Key |
 | 访问码不正确 | 输入的访问码与维护者配置不一致 | 检查 `ACCESS_CODE` 或联系维护者 |
-| 知识库加载 0 条 | `knowledge/` 文件夹缺失 | 确认 `knowledge/` 与 `main.py` 在同一目录下 |
+| 知识库为空或不存在 | `knowledge/` 缺失或没有 UTF-8 `.txt` 文件 | 检查项目根目录下的 `knowledge/`；程序会输出实际解析路径 |
 | 网页打不开 | `app.py` 未运行或端口不同 | 查看终端输出的 local URL |
-| 语义检索下载失败 | 网络无法访问 HuggingFace | 改用 `RETRIEVAL_MODE = "keyword"` |
-| 回答较慢 | API 响应耗时 | 正常 2-5 秒，避免连续高频调用 |
+| 语义检索下载失败 | 网络无法访问 HuggingFace | 设置 `RETRIEVAL_MODE=keyword`；程序也会自动回退 |
+| API 调用失败 | Key 无效、余额不足、限流或网络异常 | 根据界面中的安全提示检查配置后重试 |
 
 ---
 
+## 八、参考资料
+
 - [DeepSeek 开放平台](https://platform.deepseek.com)
-- Gradio 官方文档：https://www.gradio.app/docs
-- CC98 论坛：https://www.cc98.org/
-- Lewis et al., Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks, 2020
+- [Gradio 官方文档](https://www.gradio.app/docs)
+- [CC98 论坛](https://www.cc98.org/)
+- Lewis et al., *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*, 2020
