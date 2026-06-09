@@ -1,7 +1,7 @@
 """对比实验：带知识库(RAG) vs 不带知识库。"""
 import time
-from llm import chat
-from retriever import load_knowledge, retrieve
+from llm import chat, is_configured, user_error_message
+from retriever import is_query_in_scope, load_knowledge, retrieve
 from main import (
     append_sources,
     build_prompt,
@@ -24,6 +24,28 @@ TEST_QUESTIONS = [
     "附近有海底捞吗？",
     "转专业难不难？",
     "英语四级没过怎么办？",
+]
+
+RETRIEVAL_CASES = [
+    ("图书馆怎么预约？", ("图书馆",)),
+    ("校医院牙科怎么样？", ("牙", "校医院")),
+    ("紫金港有什么好吃的？", ("紫金港", "zjg", "好吃")),
+    ("电动车在哪买？", ("电动车",)),
+    ("宿舍可以用大功率电器吗？", ("宿舍", "大功率")),
+    ("绩点和记点有什么区别？", ("绩点", "记点")),
+    ("怎么申请奖学金？", ("评奖", "奖学金")),
+    ("校园卡丢了怎么办？", ("校园卡", "补办")),
+    ("转专业难不难？", ("转专业",)),
+    ("英语四级没过怎么办？", ("四级", "CET")),
+    ("补考怎么申请？", ("补考", "缓考")),
+]
+
+OUT_OF_SCOPE_QUESTIONS = [
+    "Python 项目怎么做？",
+    "普通医院怎么挂号？",
+    "密码怎么设置更安全？",
+    "如何报名马拉松比赛？",
+    "股票怎么买？",
 ]
 
 NO_KB_SYSTEM = """你是一个通用AI助手，请回答用户的问题。
@@ -58,7 +80,7 @@ def run_case(answer_func):
     try:
         return answer_func(), time.time() - started_at, ""
     except Exception as exc:
-        return "", time.time() - started_at, str(exc)
+        return "", time.time() - started_at, user_error_message(exc)
 
 
 def classify_result(answer, error=""):
@@ -73,10 +95,66 @@ def classify_result(answer, error=""):
     return "待人工核验"
 
 
+def run_retrieval_benchmark(chunks, top_k=3):
+    """运行无需 API 的检索命中与边界拒答基准。"""
+    hits = 0
+    print("离线检索基准")
+    print("-" * 80)
+
+    for question, expected_terms in RETRIEVAL_CASES:
+        related = retrieve(
+            question,
+            chunks,
+            top_k=top_k,
+            mode=RETRIEVAL_MODE,
+        )
+        titles = [
+            (item.get("title") or item.get("source") or "")
+            for item in related
+        ]
+        matched = any(
+            term.lower() in title.lower()
+            for term in expected_terms
+            for title in titles
+        )
+        hits += int(matched)
+        status = "命中" if matched else "未命中"
+        print(f"[{status}] {question}")
+        for title in titles:
+            print(f"       - {title}")
+
+    rejected = sum(
+        not is_query_in_scope(question)
+        for question in OUT_OF_SCOPE_QUESTIONS
+    )
+    total = len(RETRIEVAL_CASES)
+    boundary_total = len(OUT_OF_SCOPE_QUESTIONS)
+    print("\n离线基准汇总")
+    print(f"  校园问题 Top-{top_k} 命中：{hits}/{total} ({hits / total:.1%})")
+    print(
+        "  知识库外问题正确拒绝："
+        f"{rejected}/{boundary_total} ({rejected / boundary_total:.1%})"
+    )
+    return {
+        "retrieval_hits": hits,
+        "retrieval_total": total,
+        "boundary_rejected": rejected,
+        "boundary_total": boundary_total,
+    }
+
+
 def main():
     chunks = load_knowledge()
     print(f"知识库：{len(chunks)} 条 | 测试问题：{len(TEST_QUESTIONS)} 个")
     print(f"检索模式：{RETRIEVAL_MODE} | 召回 top-{RETRIEVAL_TOP_K}\n")
+    run_retrieval_benchmark(chunks)
+
+    if not is_configured():
+        print("\n未配置 DeepSeek API Key，跳过在线回答对比。")
+        print("配置 DEEPSEEK_API_KEY 后重新运行，可查看 RAG 与无知识库回答。")
+        return
+
+    print("\n在线回答对比（回答质量需人工核验）")
     print("=" * 80)
 
     results = []

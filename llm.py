@@ -2,6 +2,8 @@
 import os
 
 BASE_URL = "https://api.deepseek.com"
+REQUEST_TIMEOUT_SECONDS = 30.0
+MAX_RETRIES = 2
 _client = None
 
 
@@ -30,7 +32,12 @@ def init_client(api_key=None):
 def create_client(api_key):
     """创建独立客户端，不修改默认客户端。"""
     from openai import OpenAI
-    return OpenAI(api_key=api_key, base_url=BASE_URL)
+    return OpenAI(
+        api_key=api_key,
+        base_url=BASE_URL,
+        timeout=REQUEST_TIMEOUT_SECONDS,
+        max_retries=MAX_RETRIES,
+    )
 
 
 def validate_api_key(api_key):
