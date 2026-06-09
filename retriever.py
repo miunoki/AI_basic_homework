@@ -10,6 +10,16 @@ import hashlib
 import re
 import pickle
 
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def _project_path(path):
+    """把项目资源的相对路径固定解析到代码所在目录。"""
+    if os.path.isabs(path):
+        return path
+    return os.path.join(PROJECT_DIR, path)
+
+
 # 语义检索（可选依赖）
 try:
     from sentence_transformers import SentenceTransformer
@@ -174,6 +184,7 @@ def _filter_query_tokens(tokens):
 
 def load_knowledge(folder="knowledge"):
     """读取 knowledge/ 下所有 .txt 文件，每个文件作为一个知识块。"""
+    folder = _project_path(folder)
     chunks = []
     for path in sorted(glob.glob(os.path.join(folder, "*.txt"))):
         name = os.path.basename(path)
@@ -187,6 +198,11 @@ def load_knowledge(folder="knowledge"):
                     title = line.replace("【标题】", "").strip()
                     break
             chunks.append({"source": name, "title": title, "text": text})
+    if not chunks:
+        raise RuntimeError(
+            f"知识库为空或不存在：{folder}。"
+            "请确认 knowledge 目录中包含 UTF-8 编码的 .txt 文件。"
+        )
     return chunks
 
 
@@ -257,7 +273,10 @@ class SemanticRetriever:
             raise ImportError(
                 "请先安装 sentence-transformers: pip install sentence-transformers")
         self.model_name = model_name
-        self.cache_path = os.path.join(cache_dir, ".embeddings_cache.pkl")
+        self.cache_path = os.path.join(
+            _project_path(cache_dir),
+            ".embeddings_cache.pkl",
+        )
         self.model = None
         self.chunks = None
         self.embeddings = None

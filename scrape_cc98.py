@@ -4,6 +4,8 @@ import re
 import os
 import time
 
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # ===== 配置 =====
 # ACCESS_TOKEN 请从环境变量 CC98_ACCESS_TOKEN 读取，或在这里填入你的 Token
 # 获取方式：浏览器登录 cc98.org → DevTools → Application → localStorage → access_token
@@ -31,7 +33,7 @@ if ACCESS_TOKEN:
     HEADERS["Authorization"] = ACCESS_TOKEN
 
 API_BASE = "https://api.cc98.org"
-OUTPUT_DIR = "knowledge_cc98"
+OUTPUT_DIR = os.path.join(PROJECT_DIR, "knowledge_cc98")
 TOPICS_PER_BOARD = 5000  # 每个版块最多取多少条（全量）
 REPLIES_PER_TOPIC = 30  # 每个帖子最多取多少条回复
 MIN_REPLIES = 1          # 至少要有回复才抓取正文
