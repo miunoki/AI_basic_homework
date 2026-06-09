@@ -5,6 +5,7 @@ from retriever import load_knowledge, retrieve
 from context_utils import (
     build_context_query,
     empty_context_state,
+    recent_dialogue,
     update_context_state,
 )
 
@@ -134,11 +135,13 @@ def main():
             related
         )
 
-        messages = history + [
+        messages = [
+            history[0],
+            *recent_dialogue(history[1:]),
             {
                 "role": "user",
                 "content": user_msg
-            }
+            },
         ]
 
         try:

@@ -4,6 +4,7 @@ import gradio as gr
 from context_utils import (
     build_context_query,
     empty_context_state,
+    recent_dialogue,
     update_context_state,
 )
 from llm import chat, is_configured, user_error_message, validate_api_key
@@ -582,8 +583,7 @@ def handle_chat(history, message, auth_state, retrieval_context, example_state):
     example_state = update_examples_after_use(example_state, message)
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    for h in history[:-1]:
-        messages.append({"role": h["role"], "content": h["content"]})
+    messages.extend(recent_dialogue(history[:-1]))
     search_query = build_context_query(message, retrieval_context)
     related, debug_rows = retrieve_with_debug(search_query)
     debug_info = format_debug_info(message, search_query, debug_rows)

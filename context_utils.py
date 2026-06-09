@@ -28,6 +28,7 @@ EXPLICIT_TOPIC_HINTS = (
 SOURCE_TITLE_LIMIT = 3
 ANSWER_EXCERPT_CHARS = 160
 MAX_CONTEXT_QUERY_CHARS = 500
+MAX_HISTORY_TURNS = 6
 
 
 def empty_context_state():
@@ -36,6 +37,19 @@ def empty_context_state():
         "last_source_titles": [],
         "last_answer_excerpt": "",
     }
+
+
+def recent_dialogue(history, max_turns=MAX_HISTORY_TURNS):
+    """保留最近若干轮完整对话，避免模型请求随聊天无限增长。"""
+    messages = [
+        {"role": item["role"], "content": item["content"]}
+        for item in (history or [])
+        if item.get("role") in ("user", "assistant") and item.get("content")
+    ]
+    recent = messages[-max_turns * 2:]
+    if recent and recent[0]["role"] == "assistant":
+        recent = recent[1:]
+    return recent
 
 
 def should_use_context(question):
