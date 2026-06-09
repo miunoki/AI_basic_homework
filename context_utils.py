@@ -13,16 +13,18 @@ WEAK_FOLLOWUP_HINTS = (
 
 EXPLICIT_TOPIC_HINTS = (
     "图书馆", "自习室", "校医院", "医院", "牙科", "医保", "心理",
-    "宿舍", "寝室", "食堂", "餐厅", "外卖", "超市", "校园卡",
-    "电动车", "自行车", "交通", "公交", "地铁", "校车", "军训",
-    "奖学金", "助学金", "转专业", "绩点", "综测", "四级", "六级",
-    "选课", "教务", "学在", "教材", "快递", "社团", "体育", "健身",
-    "VPN", "WebVPN", "校网", "校园网", "打印", "租房", "保研",
+    "宿舍", "寝室", "空调", "热水", "洗澡", "洗衣", "大功率",
+    "食堂", "餐厅", "外卖", "超市", "校园卡", "补办", "挂失",
+    "电动车", "自行车", "充电", "交通", "公交", "地铁", "校车", "军训",
+    "奖学金", "助学金", "贫困生", "资助", "转专业", "绩点", "综测",
+    "四级", "六级", "选课", "教务", "学在", "教材", "快递", "社团",
+    "活动", "体育", "体测", "健身", "VPN", "WebVPN", "校网", "校园网",
+    "统一身份认证", "打印", "租房", "保研",
     "考研", "实习", "竞赛", "实验", "请假", "证件", "邮箱",
     "紫金港", "玉泉", "西溪", "华家池", "之江", "海宁",
+    "学校", "校园", "校内", "校区", "学院", "附近", "周边",
 )
 
-SHORT_FOLLOWUP_LENGTH = 18
 SOURCE_TITLE_LIMIT = 3
 ANSWER_EXCERPT_CHARS = 160
 MAX_CONTEXT_QUERY_CHARS = 500
@@ -45,8 +47,6 @@ def should_use_context(question):
         return True
     if any(hint in question for hint in EXPLICIT_TOPIC_HINTS):
         return False
-    if len(question) <= SHORT_FOLLOWUP_LENGTH:
-        return True
     return any(hint in question for hint in WEAK_FOLLOWUP_HINTS)
 
 
