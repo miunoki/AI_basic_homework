@@ -68,6 +68,7 @@ TOPIC_SYNONYM_GROUPS = [
     ("四级", "六级", "CET4", "CET-4", "CET6", "CET-6", "英语等级考试"),
     ("选课", "抢课", "退课", "补退选", "培养方案"),
     ("教务", "教务系统", "现代教务", "成绩", "课表", "考试安排"),
+    ("挂科", "不及格", "补考", "重修", "缓考", "旷考"),
     ("学在浙大", "学在", "课程平台", "作业", "网课"),
     ("教材", "课本", "买书", "二手书", "教材费"),
     ("快递", "驿站", "菜鸟", "取件"),
@@ -97,6 +98,11 @@ CAMPUS_SCOPE_TERMS = (
     "紫金港", "玉泉", "西溪", "华家池", "之江", "海宁",
     "附近", "周边",
 )
+
+AMBIGUOUS_SCOPE_TERMS = {
+    "医院", "看病", "挂号", "预约挂号", "保险",
+    "账号", "密码", "项目", "比赛", "报名",
+}
 
 QUERY_STOP_TOKENS = {
     "请问", "求问", "有没有", "有没", "没有", "哪里", "哪儿", "在哪",
@@ -130,10 +136,13 @@ def is_query_in_scope(query):
         return False
 
     query_lower = query.lower()
-    if any(
-        any(term.lower() in query_lower for term in group)
+    matched_terms = {
+        term
         for group in TOPIC_SYNONYM_GROUPS
-    ):
+        for term in group
+        if term.lower() in query_lower
+    }
+    if any(term not in AMBIGUOUS_SCOPE_TERMS for term in matched_terms):
         return True
 
     return any(term.lower() in query_lower for term in CAMPUS_SCOPE_TERMS)
@@ -238,7 +247,7 @@ def score_keyword_chunks(query, chunks):
             specific_original_title_hits * 24
             + original_title_hits * 8
             + title_hits * 10
-            + topic_title_hits * 12
+            + topic_title_hits * 36
             + jaccard * 3
             + phrase_bonus * 0.5
         )
