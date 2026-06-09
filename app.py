@@ -20,6 +20,21 @@ PROMPT_TOP_K = 4
 MAX_SOURCE_CHARS = 900
 NO_RELEVANT_ANSWER = "抱歉，资料库中暂未找到相关信息。"
 DEBUG_EMPTY_MESSAGE = "发送问题后，这里会显示实际检索 query、召回来源和相关度分数。"
+VISIBLE_EXAMPLE_COUNT = 5
+EXAMPLE_QUESTIONS = [
+    "图书馆怎么预约？",
+    "校医院牙科怎么样？",
+    "紫金港有什么好吃的？",
+    "新生宿舍条件如何？",
+    "浙大附近有哪些好玩的地方？",
+    "校园卡丢了怎么办？",
+    "新生报到要带什么？",
+    "军训要注意什么？",
+    "电动车在哪里买？",
+    "宿舍可以用大功率电器吗？",
+    "怎么申请奖学金？",
+    "学校内有几个图书馆？",
+]
 THEME = gr.themes.Soft(
     primary_hue="blue",
     secondary_hue="slate",
@@ -75,6 +90,14 @@ CSS = """
 }
 .debug-panel code {
     white-space: pre-wrap !important;
+}
+.example-row { gap: 8px !important; flex-wrap: wrap !important; }
+.example-row button {
+    border-radius: 10px !important;
+    font-size: 0.84rem !important;
+    font-weight: 500 !important;
+    min-width: 0 !important;
+    white-space: normal !important;
 }
 .input-row textarea {
     border-radius: 12px !important; border: 1.5px solid #e2e8f0 !important;
@@ -147,6 +170,90 @@ def append_sources(answer, related):
     if not sources:
         return answer
     return f"{answer.rstrip()}\n\n{sources}"
+
+
+def initial_example_state():
+    """初始化可轮换的示例问题状态。"""
+    return {
+        "visible": EXAMPLE_QUESTIONS[:VISIBLE_EXAMPLE_COUNT],
+        "pool": EXAMPLE_QUESTIONS[VISIBLE_EXAMPLE_COUNT:],
+        "used": [],
+    }
+
+
+def normalize_example_state(example_state):
+    """兼容空状态或旧状态，确保示例按钮数量固定。"""
+    state = dict(initial_example_state(), **(example_state or {}))
+    visible = list(state.get("visible") or [])
+    pool = list(state.get("pool") or [])
+    used = list(state.get("used") or [])
+
+    for question in EXAMPLE_QUESTIONS:
+        if len(visible) >= VISIBLE_EXAMPLE_COUNT:
+            break
+        if question not in visible and question not in pool and question not in used:
+            visible.append(question)
+
+    while len(visible) < VISIBLE_EXAMPLE_COUNT and pool:
+        visible.append(pool.pop(0))
+
+    return {
+        "visible": visible[:VISIBLE_EXAMPLE_COUNT],
+        "pool": pool,
+        "used": used,
+    }
+
+
+def example_button_updates(example_state):
+    """把示例状态转换为按钮更新。"""
+    state = normalize_example_state(example_state)
+    return [gr.Button(value=q) for q in state["visible"]]
+
+
+def choose_example(example_state, index):
+    """点击示例按钮时，把当前按钮文本填入输入框。"""
+    state = normalize_example_state(example_state)
+    visible = state["visible"]
+    if index >= len(visible):
+        return ""
+    return visible[index]
+
+
+def update_examples_after_use(example_state, message):
+    """发送当前示例后，将该示例替换为备用问题。"""
+    state = normalize_example_state(example_state)
+    message = (message or "").strip()
+    visible = list(state["visible"])
+    pool = list(state["pool"])
+    used = list(state["used"])
+
+    if message not in visible:
+        return state
+
+    idx = visible.index(message)
+    if message not in used:
+        used.append(message)
+
+    replacement = None
+    while pool and replacement is None:
+        candidate = pool.pop(0)
+        if candidate not in visible:
+            replacement = candidate
+
+    if replacement is None:
+        for candidate in used:
+            if candidate != message and candidate not in visible:
+                replacement = candidate
+                break
+
+    if replacement is not None:
+        visible[idx] = replacement
+
+    return {
+        "visible": visible,
+        "pool": pool,
+        "used": used,
+    }
 
 
 def retrieve_with_debug(query):
@@ -430,20 +537,37 @@ def normalize_chat_history(history):
     return normalized
 
 
-def handle_chat(history, message, auth_state, retrieval_context):
+def handle_chat(history, message, auth_state, retrieval_context, example_state):
     """处理一轮对话：添加用户消息 + 调用 LLM 生成回复。"""
     history = normalize_chat_history(history)
     retrieval_context = dict(empty_context_state(), **(retrieval_context or {}))
+    example_state = normalize_example_state(example_state)
     message = (message or "").strip()
     if not message:
-        return history, "", retrieval_context, DEBUG_EMPTY_MESSAGE
+        return (
+            history,
+            "",
+            retrieval_context,
+            DEBUG_EMPTY_MESSAGE,
+            example_state,
+            *example_button_updates(example_state),
+        )
 
     history.append({"role": "user", "content": message})
 
     if not can_chat(auth_state):
         history.append({"role": "assistant", "content": missing_access_message()})
         debug_info = format_debug_info(message, message, [])
-        return history, "", retrieval_context, debug_info
+        return (
+            history,
+            "",
+            retrieval_context,
+            debug_info,
+            example_state,
+            *example_button_updates(example_state),
+        )
+
+    example_state = update_examples_after_use(example_state, message)
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for h in history[:-1]:
@@ -454,7 +578,14 @@ def handle_chat(history, message, auth_state, retrieval_context):
 
     if not related:
         history.append({"role": "assistant", "content": NO_RELEVANT_ANSWER})
-        return history, "", retrieval_context, debug_info
+        return (
+            history,
+            "",
+            retrieval_context,
+            debug_info,
+            example_state,
+            *example_button_updates(example_state),
+        )
 
     prompt = build_prompt(message, related)
     messages.append({"role": "user", "content": prompt})
@@ -467,7 +598,14 @@ def handle_chat(history, message, auth_state, retrieval_context):
         reply = f"❌ **调用失败**：{e}\n\n请检查 API Key、账户余额、网络连接，或联系维护者查看后台日志。"
 
     history.append({"role": "assistant", "content": reply})
-    return history, "", retrieval_context, debug_info
+    return (
+        history,
+        "",
+        retrieval_context,
+        debug_info,
+        example_state,
+        *example_button_updates(example_state),
+    )
 
 
 # ===== 界面构建 =====
@@ -475,6 +613,7 @@ def handle_chat(history, message, auth_state, retrieval_context):
 with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
     auth_state = gr.State(empty_auth_state())
     retrieval_context = gr.State(empty_context_state())
+    example_state = gr.State(initial_example_state())
     gr.HTML(HEADER_HTML)
 
     # ━━━━ 开始使用区 ━━━━
@@ -522,18 +661,10 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
         send_btn = gr.Button("发送", variant="primary", scale=1, elem_classes="send-btn")
 
     gr.Markdown("##### 💡 试试这些问题")
-    gr.Examples(
-        examples=[
-            "图书馆怎么预约？",
-            "校医院牙科怎么样？",
-            "紫金港有什么好吃的？",
-            "新生宿舍条件如何？",
-            "浙大附近有哪些好玩的地方？",
-        ],
-        inputs=msg,
-        label="",
-        examples_per_page=5,
-    )
+    example_buttons = []
+    with gr.Row(elem_classes="example-row"):
+        for question in EXAMPLE_QUESTIONS[:VISIBLE_EXAMPLE_COUNT]:
+            example_buttons.append(gr.Button(question, variant="secondary", scale=1))
 
     with gr.Accordion("🔎 检索过程 / 来源调试", open=False):
         debug_panel = gr.Markdown(DEBUG_EMPTY_MESSAGE, elem_classes="debug-panel")
@@ -554,16 +685,32 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
         outputs=[api_status, api_accordion, auth_state],
     )
 
+    for i, button in enumerate(example_buttons):
+        button.click(
+            fn=lambda state, index=i: choose_example(state, index),
+            inputs=example_state,
+            outputs=msg,
+        )
+
+    chat_outputs = [
+        chatbot,
+        msg,
+        retrieval_context,
+        debug_panel,
+        example_state,
+        *example_buttons,
+    ]
+
     msg.submit(
         fn=handle_chat,
-        inputs=[chatbot, msg, auth_state, retrieval_context],
-        outputs=[chatbot, msg, retrieval_context, debug_panel],
+        inputs=[chatbot, msg, auth_state, retrieval_context, example_state],
+        outputs=chat_outputs,
     )
 
     send_btn.click(
         fn=handle_chat,
-        inputs=[chatbot, msg, auth_state, retrieval_context],
-        outputs=[chatbot, msg, retrieval_context, debug_panel],
+        inputs=[chatbot, msg, auth_state, retrieval_context, example_state],
+        outputs=chat_outputs,
     )
 
 if __name__ == "__main__":
