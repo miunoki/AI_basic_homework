@@ -6,7 +6,7 @@ from context_utils import (
     empty_context_state,
     update_context_state,
 )
-from llm import chat, init_client, is_configured
+from llm import chat, create_client, is_configured
 from retriever import (
     KEYWORD_MIN_SCORE,
     is_query_in_scope,
@@ -395,6 +395,7 @@ def empty_auth_state():
     return {
         "access_granted": False,
         "personal_key_configured": False,
+        "personal_api_key": "",
     }
 
 
@@ -412,15 +413,14 @@ def submit_access(access_code, api_key, auth_state):
                 auth_state,
             )
         try:
-            ok = init_client(key)
-            if ok:
-                auth_state["personal_key_configured"] = True
-                return (
-                    gr.Markdown("✅ **个人 API Key 配置成功**，无需访问码，可以开始对话。"),
-                    gr.Accordion(open=False),
-                    auth_state,
-                )
-            return gr.Markdown("❌ **API Key 配置失败，请重试**"), gr.Accordion(open=True), auth_state
+            create_client(key)
+            auth_state["personal_key_configured"] = True
+            auth_state["personal_api_key"] = key
+            return (
+                gr.Markdown("✅ **个人 API Key 配置成功**，无需访问码，可以开始对话。"),
+                gr.Accordion(open=False),
+                auth_state,
+            )
         except Exception as e:
             return gr.Markdown(f"❌ **连接失败**：{e}"), gr.Accordion(open=True), auth_state
 
@@ -434,6 +434,8 @@ def submit_access(access_code, api_key, auth_state):
         if access_code != ACCESS_CODE:
             return gr.Markdown("❌ **访问码不正确，请检查后重试。**"), gr.Accordion(open=True), auth_state
         auth_state["access_granted"] = True
+        auth_state["personal_key_configured"] = False
+        auth_state["personal_api_key"] = ""
         if SERVER_API_CONFIGURED:
             return (
                 gr.Markdown("✅ **访问码验证成功**，将使用项目方配置的服务端 API。"),
@@ -475,7 +477,7 @@ def get_start_status(auth_state):
 
 def can_chat(auth_state):
     auth_state = dict(auth_state or empty_auth_state())
-    return auth_state.get("personal_key_configured") or (
+    return bool(auth_state.get("personal_api_key")) or (
         auth_state.get("access_granted") and SERVER_API_CONFIGURED
     )
 
@@ -595,7 +597,8 @@ def handle_chat(history, message, auth_state, retrieval_context, example_state):
     messages.append({"role": "user", "content": prompt})
 
     try:
-        raw_reply = chat(messages)
+        personal_api_key = (auth_state or {}).get("personal_api_key") or None
+        raw_reply = chat(messages, api_key=personal_api_key)
         reply = append_sources(raw_reply, related)
         retrieval_context = update_context_state(message, related, raw_reply)
     except Exception as e:

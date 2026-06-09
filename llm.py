@@ -18,14 +18,19 @@ def _get_api_key():
 
 
 def init_client(api_key=None):
-    """用指定的 API Key 初始化 OpenAI 客户端，返回是否成功。"""
+    """初始化命令行和服务端共用的默认客户端。"""
     global _client
     key = api_key or _get_api_key()
     if key:
-        from openai import OpenAI
-        _client = OpenAI(api_key=key, base_url=BASE_URL)
+        _client = create_client(key)
         return True
     return False
+
+
+def create_client(api_key):
+    """创建独立客户端，不修改默认客户端。"""
+    from openai import OpenAI
+    return OpenAI(api_key=api_key, base_url=BASE_URL)
 
 
 def is_configured():
@@ -59,11 +64,13 @@ def _clean_messages(messages):
     ]
 
 
-def chat(messages, model="deepseek-chat", temperature=0.7, **kwargs):
-    if _client is None:
+def chat(messages, model="deepseek-chat", temperature=0.7,
+         api_key=None, **kwargs):
+    client = create_client(api_key) if api_key else _client
+    if client is None:
         raise RuntimeError("请先在网页中配置 API Key（点击「API 配置」展开设置）。")
     messages = _clean_messages(messages)
-    resp = _client.chat.completions.create(
+    resp = client.chat.completions.create(
         model=model, messages=messages, temperature=temperature, **kwargs
     )
     return resp.choices[0].message.content
