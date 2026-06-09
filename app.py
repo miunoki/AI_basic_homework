@@ -7,13 +7,19 @@ from context_utils import (
     update_context_state,
 )
 from llm import chat, init_client, is_configured
-from retriever import load_knowledge, retrieve
+from retriever import (
+    KEYWORD_MIN_SCORE,
+    load_knowledge,
+    retrieve,
+    score_keyword_chunks,
+)
 
 RETRIEVAL_MODE = "keyword"
 RETRIEVAL_TOP_K = 8
 PROMPT_TOP_K = 4
 MAX_SOURCE_CHARS = 900
 NO_RELEVANT_ANSWER = "抱歉，资料库中暂未找到相关信息。"
+DEBUG_EMPTY_MESSAGE = "发送问题后，这里会显示实际检索 query、召回来源和相关度分数。"
 THEME = gr.themes.Soft(
     primary_hue="blue",
     secondary_hue="slate",
@@ -63,6 +69,13 @@ CSS = """
 .api-status-err { color: #dc2626 !important; font-weight: 600 !important; }
 .chatbot-wrapper { border-radius: 16px; overflow: hidden; }
 .chatbot-wrapper .bubble-wrap { padding: 8px 0; }
+.debug-panel {
+    font-size: 0.86rem !important;
+    color: #475569 !important;
+}
+.debug-panel code {
+    white-space: pre-wrap !important;
+}
 .input-row textarea {
     border-radius: 12px !important; border: 1.5px solid #e2e8f0 !important;
     padding: 12px 16px !important; font-size: 0.95rem !important;
@@ -134,6 +147,110 @@ def append_sources(answer, related):
     if not sources:
         return answer
     return f"{answer.rstrip()}\n\n{sources}"
+
+
+def retrieve_with_debug(query):
+    """执行检索并返回调试信息，避免调试面板和正式检索结果不一致。"""
+    if RETRIEVAL_MODE == "keyword":
+        ranked = score_keyword_chunks(query, chunks)
+        accepted = [
+            (score, chunk) for score, chunk in ranked
+            if score >= KEYWORD_MIN_SCORE
+        ][:RETRIEVAL_TOP_K]
+        related = [chunk for _, chunk in accepted]
+        debug_rows = [
+            {
+                "rank": i,
+                "score": score,
+                "accepted": True,
+                "used_in_prompt": i <= PROMPT_TOP_K,
+                "title": chunk.get("title") or chunk.get("source") or "未命名来源",
+                "source": chunk.get("source", ""),
+            }
+            for i, (score, chunk) in enumerate(accepted, 1)
+        ]
+
+        if not debug_rows:
+            debug_rows = [
+                {
+                    "rank": i,
+                    "score": score,
+                    "accepted": False,
+                    "used_in_prompt": False,
+                    "title": chunk.get("title") or chunk.get("source") or "未命名来源",
+                    "source": chunk.get("source", ""),
+                }
+                for i, (score, chunk) in enumerate(ranked[:5], 1)
+            ]
+
+        return related, debug_rows
+
+    related = retrieve(
+        query,
+        chunks,
+        top_k=RETRIEVAL_TOP_K,
+        mode=RETRIEVAL_MODE,
+    )
+    debug_rows = [
+        {
+            "rank": i,
+            "score": None,
+            "accepted": True,
+            "used_in_prompt": i <= PROMPT_TOP_K,
+            "title": chunk.get("title") or chunk.get("source") or "未命名来源",
+            "source": chunk.get("source", ""),
+        }
+        for i, chunk in enumerate(related, 1)
+    ]
+    return related, debug_rows
+
+
+def format_debug_info(original_question, search_query, debug_rows):
+    """格式化检索调试面板内容。"""
+    original_question = (original_question or "").strip()
+    search_query = (search_query or "").strip()
+    query_changed = original_question != search_query
+
+    lines = [
+        "### 检索过程",
+        f"- 检索模式：`{RETRIEVAL_MODE}`",
+        f"- 检索召回：`top-{RETRIEVAL_TOP_K}`；Prompt 引用：`top-{PROMPT_TOP_K}`",
+        f"- 低相关阈值：`{KEYWORD_MIN_SCORE}`" if RETRIEVAL_MODE == "keyword" else "- 低相关阈值：语义检索模式不使用关键词阈值",
+        "- 上下文增强：已启用" if query_changed else "- 上下文增强：未触发",
+        "",
+        "**用户原始问题**",
+        f"```text\n{original_question or '无'}\n```",
+        "**实际检索 query**",
+        f"```text\n{search_query or '无'}\n```",
+        "",
+        "### 召回来源",
+    ]
+
+    if not debug_rows:
+        lines.append("未召回到候选来源。")
+        return "\n".join(lines)
+
+    for row in debug_rows:
+        title = row["title"]
+        source = row.get("source") or "无文件名"
+        if row.get("score") is None:
+            score_text = "无分数"
+        else:
+            score_text = f"{row['score']:.1f}"
+
+        if row.get("used_in_prompt"):
+            status = "进入 Prompt"
+        elif row.get("accepted"):
+            status = "已召回"
+        else:
+            status = "低于阈值"
+
+        lines.append(
+            f"{row['rank']}. **{title}**  "
+            f"`{status}` `score={score_text}` `source={source}`"
+        )
+
+    return "\n".join(lines)
 
 
 chunks = load_knowledge()
@@ -319,28 +436,25 @@ def handle_chat(history, message, auth_state, retrieval_context):
     retrieval_context = dict(empty_context_state(), **(retrieval_context or {}))
     message = (message or "").strip()
     if not message:
-        return history, "", retrieval_context
+        return history, "", retrieval_context, DEBUG_EMPTY_MESSAGE
 
     history.append({"role": "user", "content": message})
 
     if not can_chat(auth_state):
         history.append({"role": "assistant", "content": missing_access_message()})
-        return history, "", retrieval_context
+        debug_info = format_debug_info(message, message, [])
+        return history, "", retrieval_context, debug_info
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for h in history[:-1]:
         messages.append({"role": h["role"], "content": h["content"]})
     search_query = build_context_query(message, retrieval_context)
-    related = retrieve(
-        search_query,
-        chunks,
-        top_k=RETRIEVAL_TOP_K,
-        mode=RETRIEVAL_MODE,
-    )
+    related, debug_rows = retrieve_with_debug(search_query)
+    debug_info = format_debug_info(message, search_query, debug_rows)
 
     if not related:
         history.append({"role": "assistant", "content": NO_RELEVANT_ANSWER})
-        return history, "", retrieval_context
+        return history, "", retrieval_context, debug_info
 
     prompt = build_prompt(message, related)
     messages.append({"role": "user", "content": prompt})
@@ -353,7 +467,7 @@ def handle_chat(history, message, auth_state, retrieval_context):
         reply = f"❌ **调用失败**：{e}\n\n请检查 API Key、账户余额、网络连接，或联系维护者查看后台日志。"
 
     history.append({"role": "assistant", "content": reply})
-    return history, "", retrieval_context
+    return history, "", retrieval_context, debug_info
 
 
 # ===== 界面构建 =====
@@ -421,6 +535,9 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
         examples_per_page=5,
     )
 
+    with gr.Accordion("🔎 检索过程 / 来源调试", open=False):
+        debug_panel = gr.Markdown(DEBUG_EMPTY_MESSAGE, elem_classes="debug-panel")
+
     gr.HTML(FOOTER_HTML)
 
     # ━━━━ 事件绑定 ━━━━
@@ -440,13 +557,13 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
     msg.submit(
         fn=handle_chat,
         inputs=[chatbot, msg, auth_state, retrieval_context],
-        outputs=[chatbot, msg, retrieval_context],
+        outputs=[chatbot, msg, retrieval_context, debug_panel],
     )
 
     send_btn.click(
         fn=handle_chat,
         inputs=[chatbot, msg, auth_state, retrieval_context],
-        outputs=[chatbot, msg, retrieval_context],
+        outputs=[chatbot, msg, retrieval_context, debug_panel],
     )
 
 if __name__ == "__main__":
