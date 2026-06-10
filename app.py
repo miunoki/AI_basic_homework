@@ -23,6 +23,7 @@ from retriever import (
 PROJECT_DIR = Path(__file__).resolve().parent
 ASSET_DIR = PROJECT_DIR / "assets"
 BACKGROUND_IMAGE = ASSET_DIR / "ui-background.png"
+NEW_CHAT_ICON = ASSET_DIR / "new-chat.svg"
 gr.set_static_paths(paths=[ASSET_DIR])
 BACKGROUND_URL = (
     f"/gradio_api/file={quote(BACKGROUND_IMAGE.as_posix(), safe='/:')}"
@@ -36,7 +37,10 @@ NO_RELEVANT_ANSWER = (
     "抱歉，资料库中暂未找到相关信息。"
     "建议咨询学校相关部门或通过浙大官方渠道确认。"
 )
-DEBUG_EMPTY_MESSAGE = "发送问题后，这里会显示实际检索 query、召回来源和相关度分数。"
+DEBUG_EMPTY_MESSAGE = (
+    "发送问题后，这里会显示系统实际使用的检索词、参考帖子和来源。"
+    "这是用于核对回答依据的高级信息，普通使用无需展开。"
+)
 VISIBLE_EXAMPLE_COUNT = 5
 EXAMPLE_QUESTIONS = [
     "图书馆怎么预约？",
@@ -164,14 +168,14 @@ gradio-app {
 }
 
 .gradio-container {
-    max-width: 980px !important;
+    max-width: 1040px !important;
     margin: 0 auto !important;
-    padding: 22px 18px 32px !important;
+    padding: 12px 16px 24px !important;
     background: transparent !important;
 }
 
 .app-shell {
-    padding: 16px !important;
+    padding: 12px !important;
     border: 1px solid rgba(143, 195, 232, 0.72) !important;
     border-radius: 26px !important;
     background: rgba(255, 255, 255, 0.93) !important;
@@ -186,8 +190,8 @@ gradio-app {
     background: var(--zju-navy);
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 20px;
-    padding: 24px 28px 22px;
-    margin-bottom: 4px;
+    padding: 16px 22px 15px;
+    margin-bottom: 2px;
     color: white;
     box-shadow: 0 12px 28px rgba(6, 59, 115, 0.22);
 }
@@ -245,11 +249,11 @@ gradio-app {
     z-index: 1;
     display: grid;
     place-items: center;
-    width: 58px;
-    height: 58px;
-    flex: 0 0 58px;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
     border: 2px solid rgba(255, 255, 255, 0.72);
-    border-radius: 16px;
+    border-radius: 14px;
     background: var(--zju-blue);
     color: white;
     font-size: 1rem;
@@ -257,7 +261,7 @@ gradio-app {
     letter-spacing: 0.08em;
 }
 .header-bar h1 {
-    font-size: clamp(1.55rem, 3vw, 2.05rem);
+    font-size: clamp(1.42rem, 2.7vw, 1.88rem);
     line-height: 1.2;
     font-weight: 760;
     margin: 0;
@@ -269,9 +273,9 @@ gradio-app {
     z-index: 1;
     max-width: 720px;
     font-size: 0.9rem;
-    line-height: 1.7;
+    line-height: 1.5;
     opacity: 0.88;
-    margin: 9px 0 0;
+    margin: 5px 0 0;
     color: var(--zju-pale) !important;
 }
 .header-tags {
@@ -279,14 +283,14 @@ gradio-app {
     z-index: 1;
     display: flex;
     gap: 8px;
-    margin-top: 16px;
+    margin-top: 10px;
     flex-wrap: wrap;
 }
 .header-tags span {
     background: var(--zju-blue);
     border: 1px solid rgba(255, 255, 255, 0.26);
     border-radius: 999px;
-    padding: 5px 13px;
+    padding: 4px 11px;
     font-size: 0.75rem;
     font-weight: 600;
     color: white;
@@ -335,22 +339,122 @@ gradio-app {
     box-shadow: 0 8px 24px rgba(6, 59, 115, 0.08) !important;
 }
 .chatbot-wrapper .bubble-wrap { padding: 8px 0; }
-.chatbot-wrapper .message.user {
+.chatbot-wrapper .message.user,
+.chatbot-wrapper .message.user *,
+.chatbot-wrapper [data-testid="user"] *,
+.chatbot-wrapper .user .prose,
+.chatbot-wrapper .user p {
     background: var(--zju-blue) !important;
     color: white !important;
+}
+.chatbot-wrapper .message.user * {
+    background: transparent !important;
+}
+.chatbot-wrapper .message.user a,
+.chatbot-wrapper [data-testid="user"] a {
+    color: #FFFFFF !important;
+    text-decoration-color: rgba(255, 255, 255, 0.72) !important;
 }
 .chatbot-wrapper .message.bot {
     border: 1px solid var(--zju-pale) !important;
     background: var(--zju-ice) !important;
     color: var(--zju-ink) !important;
 }
+.chatbot-wrapper button[aria-label*="clear" i],
+.chatbot-wrapper button[title*="clear" i],
+.chatbot-wrapper button[aria-label*="清空"],
+.chatbot-wrapper button[title*="清空"] {
+    display: none !important;
+}
+
+.chat-toolbar {
+    min-height: 38px !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-top: 1px !important;
+}
+.chat-title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 0 3px;
+}
+.chat-title strong {
+    color: var(--zju-navy);
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+}
+.chat-title span {
+    color: #6F879B;
+    font-size: 0.75rem;
+}
+.new-chat-btn {
+    flex: 0 0 126px !important;
+    width: 126px !important;
+    max-width: 126px !important;
+    min-height: 38px !important;
+    border: 1px solid var(--zju-sky) !important;
+    border-radius: 12px !important;
+    background: white !important;
+    color: var(--zju-navy) !important;
+    font-weight: 700 !important;
+}
+.new-chat-btn img,
+.new-chat-btn svg {
+    width: 19px !important;
+    height: 19px !important;
+}
+.new-chat-btn:hover {
+    border-color: var(--zju-blue) !important;
+    background: var(--zju-ice) !important;
+}
 
 .debug-panel {
     font-size: 0.86rem !important;
     color: #405B73 !important;
 }
-.debug-panel code {
+.debug-panel p,
+.debug-panel li,
+.debug-panel strong,
+.debug-panel h3 {
+    color: var(--zju-ink) !important;
+}
+.debug-panel code:not(pre code) {
+    display: inline-block;
+    padding: 2px 7px !important;
+    border: 1px solid var(--zju-sky) !important;
+    border-radius: 6px !important;
+    background: var(--zju-pale) !important;
+    color: var(--zju-navy) !important;
+    font-weight: 650 !important;
+}
+.debug-panel pre,
+.debug-panel pre code,
+.debug-panel blockquote {
+    border: 1px solid var(--zju-pale) !important;
+    border-radius: 10px !important;
+    background: #FFFFFF !important;
+    color: var(--zju-ink) !important;
+}
+.debug-panel pre code {
     white-space: pre-wrap !important;
+}
+.debug-panel blockquote {
+    margin: 7px 0 14px !important;
+    padding: 10px 13px !important;
+    border-left: 4px solid var(--zju-bright) !important;
+}
+.debug-panel blockquote p {
+    margin: 0 !important;
+}
+.debug-intro {
+    margin: 0 0 4px !important;
+    padding: 10px 12px !important;
+    border: 1px solid var(--zju-pale) !important;
+    border-radius: 10px !important;
+    background: white !important;
+    color: #405B73 !important;
+    font-size: 0.82rem !important;
 }
 
 .section-heading {
@@ -392,6 +496,9 @@ gradio-app {
     padding: 12px 16px !important;
     font-size: 0.95rem !important;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.input-row {
+    gap: 10px !important;
 }
 .input-row textarea:focus {
     border-color: var(--zju-bright) !important;
@@ -464,7 +571,7 @@ button:focus-visible {
         border-radius: 19px !important;
     }
     .header-bar {
-        padding: 20px 18px 18px;
+        padding: 15px 16px 14px;
         border-radius: 16px;
     }
     .header-monogram {
@@ -484,6 +591,15 @@ button:focus-visible {
         align-items: flex-start;
         flex-direction: column;
         gap: 2px;
+    }
+    .chat-toolbar {
+        flex-direction: row !important;
+    }
+    .chat-title span {
+        display: none;
+    }
+    .new-chat-btn {
+        min-width: 108px !important;
     }
     .api-row,
     .input-row {
@@ -722,24 +838,28 @@ def retrieve_with_debug(query):
 
 
 def format_debug_info(original_question, search_query, debug_rows):
-    """格式化检索调试面板内容。"""
+    """格式化便于普通用户阅读的检索依据。"""
     original_question = (original_question or "").strip()
     search_query = (search_query or "").strip()
     query_changed = original_question != search_query
 
+    def quote_text(value):
+        return "\n".join(f"> {line}" for line in (value or "无").splitlines())
+
     lines = [
-        "### 检索过程",
+        "### 本次回答如何查找资料",
         f"- 检索模式：`{RETRIEVAL_MODE}`",
         f"- 检索召回：`top-{RETRIEVAL_TOP_K}`；Prompt 引用：`top-{PROMPT_TOP_K}`",
         f"- 低相关阈值：`{KEYWORD_MIN_SCORE}`" if RETRIEVAL_MODE == "keyword" else "- 低相关阈值：语义检索模式不使用关键词阈值",
         "- 上下文增强：已启用" if query_changed else "- 上下文增强：未触发",
         "",
         "**用户原始问题**",
-        f"```text\n{original_question or '无'}\n```",
-        "**实际检索 query**",
-        f"```text\n{search_query or '无'}\n```",
+        quote_text(original_question),
         "",
-        "### 召回来源",
+        "**实际用于检索的问题**",
+        quote_text(search_query),
+        "",
+        "### 找到的参考帖子",
     ]
 
     if not debug_rows:
@@ -877,12 +997,12 @@ def get_start_status(auth_state):
     if SERVER_API_CONFIGURED:
         return (
             gr.Markdown("ℹ️ **有访问码的新生可输入访问码使用；已有 DeepSeek API Key 的用户可直接输入 Key。**"),
-            gr.Accordion(open=True),
+            gr.Accordion(open=False),
             auth_state,
         )
     return (
         gr.Markdown("⚠️ **服务端未配置 API Key。** 请输入个人 DeepSeek API Key，或联系维护者配置服务端 Key。"),
-        gr.Accordion(open=True),
+        gr.Accordion(open=False),
         auth_state,
     )
 
@@ -1029,6 +1149,19 @@ def handle_chat(history, message, auth_state, retrieval_context, example_state):
     )
 
 
+def reset_conversation():
+    """开始新对话，并重置与当前对话关联的上下文和示例状态。"""
+    state = initial_example_state()
+    return (
+        [],
+        "",
+        empty_context_state(),
+        DEBUG_EMPTY_MESSAGE,
+        state,
+        *example_button_updates(state),
+    )
+
+
 # ===== 界面构建 =====
 
 with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
@@ -1038,10 +1171,73 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
     with gr.Column(elem_classes="app-shell"):
         gr.HTML(HEADER_HTML)
 
-        # ━━━━ 开始使用区 ━━━━
+        # ━━━━ 聊天区 ━━━━
+        with gr.Row(elem_classes="chat-toolbar", equal_height=True):
+            gr.HTML(
+                '<div class="chat-title">'
+                "<strong>校园问答</strong>"
+                "<span>问题输入、回答查看和新对话均集中在首屏</span>"
+                "</div>",
+                scale=8,
+            )
+            new_chat_btn = gr.Button(
+                "新对话",
+                icon=NEW_CHAT_ICON,
+                variant="secondary",
+                size="sm",
+                scale=1,
+                min_width=112,
+                elem_classes=["new-chat-btn", "interactive-btn"],
+            )
+
+        chatbot = gr.Chatbot(
+            value=[],
+            show_label=False,
+            elem_classes="chatbot-wrapper",
+            layout="bubble",
+            height=330,
+            scale=1,
+            buttons=[],
+        )
+
+        with gr.Row(elem_classes="input-row", equal_height=True):
+            msg = gr.Textbox(
+                placeholder="输入校园生活问题，例如：紫金港有什么好吃的？",
+                show_label=False,
+                scale=9,
+                container=False,
+                elem_classes="message-input",
+            )
+            send_btn = gr.Button(
+                "发送问题",
+                variant="primary",
+                scale=1,
+                min_width=112,
+                elem_classes=["send-btn", "interactive-btn"],
+            )
+
+        # ━━━━ 次要功能区 ━━━━
+        gr.HTML(
+            '<div class="section-heading">'
+            "<strong>快速提问</strong>"
+            "<span>选择一个问题，或在上方输入自己的问题</span>"
+            "</div>"
+        )
+        example_buttons = []
+        with gr.Row(elem_classes="example-row"):
+            for question in EXAMPLE_QUESTIONS[:VISIBLE_EXAMPLE_COUNT]:
+                example_buttons.append(
+                    gr.Button(
+                        question,
+                        variant="secondary",
+                        scale=1,
+                        elem_classes=["example-btn", "interactive-btn"],
+                    )
+                )
+
         api_accordion = gr.Accordion(
-            "开始使用",
-            open=True,
+            "访问码 / API 配置",
+            open=False,
             elem_classes="api-accordion",
         )
         with api_accordion:
@@ -1075,55 +1271,16 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
                 "> 同时填写时优先使用个人 API Key。个人 Key 仅在当前会话有效，不会写入磁盘。"
             )
 
-        # ━━━━ 聊天区 ━━━━
-        chatbot = gr.Chatbot(
-            value=[],
-            label="校园问答",
-            elem_classes="chatbot-wrapper",
-            layout="bubble",
-            height=360,
-            scale=1,
-        )
-
-        with gr.Row(elem_classes="input-row", equal_height=True):
-            msg = gr.Textbox(
-                placeholder="输入校园生活问题，例如：紫金港有什么好吃的？",
-                show_label=False,
-                scale=9,
-                container=False,
-                elem_classes="message-input",
-            )
-            send_btn = gr.Button(
-                "发送问题",
-                variant="primary",
-                scale=1,
-                min_width=112,
-                elem_classes=["send-btn", "interactive-btn"],
-            )
-
-        gr.HTML(
-            '<div class="section-heading">'
-            "<strong>快速提问</strong>"
-            "<span>选择一个问题，或在上方输入自己的问题</span>"
-            "</div>"
-        )
-        example_buttons = []
-        with gr.Row(elem_classes="example-row"):
-            for question in EXAMPLE_QUESTIONS[:VISIBLE_EXAMPLE_COUNT]:
-                example_buttons.append(
-                    gr.Button(
-                        question,
-                        variant="secondary",
-                        scale=1,
-                        elem_classes=["example-btn", "interactive-btn"],
-                    )
-                )
-
         with gr.Accordion(
-            "检索过程与来源调试",
+            "检索依据与来源（高级信息）",
             open=False,
             elem_classes="debug-accordion",
         ):
+            gr.Markdown(
+                "这里用于查看系统为本次回答检索了什么，以及哪些帖子真正进入回答依据。"
+                "普通问答无需展开。",
+                elem_classes="debug-intro",
+            )
             debug_panel = gr.Markdown(
                 DEBUG_EMPTY_MESSAGE,
                 elem_classes="debug-panel",
@@ -1170,6 +1327,12 @@ with gr.Blocks(title="浙大智能问答助手", fill_height=True) as demo:
     send_btn.click(
         fn=handle_chat,
         inputs=[chatbot, msg, auth_state, retrieval_context, example_state],
+        outputs=chat_outputs,
+    )
+
+    new_chat_btn.click(
+        fn=reset_conversation,
+        inputs=None,
         outputs=chat_outputs,
     )
 
