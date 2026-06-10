@@ -9,7 +9,7 @@
 | 题目 | 基于 CC98 论坛的新生入学指南智能问答助手 |
 | 组号 | 16 |
 | 成员 | 游尚洲、马野、陈俊希 |
-| 日期 | 2026 年 5 月 |
+| 日期 | 2026 年 6 月 |
 
 ---
 
@@ -43,7 +43,7 @@
 ## 二、系统架构
 
 ```
-用户提问 → 中文分词 → 知识库检索(Jaccard/语义) → Prompt拼接 → DeepSeek API → 生成回答
+用户提问 → 校园范围/上下文判断 → Top-8 检索(Jaccard/语义) → Top-4 Prompt → DeepSeek API → 回答与来源
 ```
 
 选用经典 RAG（检索增强生成）架构，核心流程：
@@ -58,22 +58,33 @@
 
 ## 三、项目结构
 
+```text
+AI_basic_homework/
+├── README.md                  # 安装、配置、运行与项目说明
+├── requirements.txt           # 已验证的 Python 依赖版本
+├── config.example.py          # 可提交的空配置模板
+├── .gitignore                 # 密钥、缓存、日志和临时文件忽略规则
+├── main.py                    # 命令行 RAG 问答入口
+├── app.py                     # Gradio 网页入口
+├── llm.py                     # DeepSeek API 封装、校验与错误处理
+├── retriever.py               # 范围判断、关键词/语义检索与缓存
+├── context_utils.py           # 连续追问识别与检索上下文增强
+├── compare.py                 # 离线基准及 RAG/纯模型在线对比
+├── scrape_cc98.py             # CC98 数据采集脚本
+├── start_web.bat              # Windows 双击启动脚本
+├── assets/
+│   ├── ui-background.png      # 网页背景图
+│   └── new-chat.svg           # “新对话”按钮图标
+├── knowledge/                 # 3643 个 CC98 文本知识条目
+└── docs/
+    ├── 实验报告.md             # 完整实验报告
+    ├── 技术栈.md               # 当前技术方案与变更记录
+    ├── 小组分工说明.docx       # 成员职责、贡献占比与协作机制
+    ├── 答辩PPT.pptx            # 11 页答辩演示文稿
+    └── images/                # 报告使用的 4 张最新版运行截图
 ```
-大作业/
-├── README.md                # 本文件（项目文档）
-├── requirements.txt         # Python 依赖
-├── config.py                # 本地配置文件（不提交，可配置 API Key / 访问码）
-├── .gitignore               # Git 忽略规则
-├── llm.py                  # DeepSeek API 封装
-├── retriever.py            # 知识库加载与检索（关键词 + 语义双模式）
-├── context_utils.py         # 多轮追问识别与检索上下文增强
-├── main.py                 # 命令行入口（多轮对话 + 上下文增强检索）
-├── app.py                  # Gradio 网页界面（含 API 配置面板）
-├── compare.py              # 对比实验：RAG vs 纯大模型
-├── scrape_cc98.py           # CC98 论坛爬虫
-├── knowledge/              # 知识库文本文件（3643 条）
-└── docs/                   # 技术栈、实验报告、分工说明、答辩 PPT
-```
+
+> 仓库中**没有 `config.py` 是正常且必要的安全设计**。任务书要求 API Key 不得提交，因此仓库只提供 `config.example.py`；使用者在本地复制后填写，生成的 `config.py` 已由 `.gitignore` 排除。
 
 ---
 
@@ -101,11 +112,26 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 ### 4.3 配置 API Key 与访问码
 
-在项目根目录创建 `config.py`，维护者可填入服务端 DeepSeek API Key 和统一访问码：
+先把安全模板复制为本地配置文件。
+
+PowerShell：
+
+```powershell
+Copy-Item config.example.py config.py
+```
+
+Windows CMD：
+
+```bat
+copy config.example.py config.py
+```
+
+然后只在本机的 `config.py` 中填写需要的值：
 
 ```python
 DEEPSEEK_API_KEY = "你的 DeepSeek API Key"
 ACCESS_CODE = "给新生使用的访问码"
+CC98_ACCESS_TOKEN = ""  # 仅重新抓取 CC98 数据时需要
 ```
 
 也可以通过环境变量配置。PowerShell：
@@ -122,7 +148,7 @@ set DEEPSEEK_API_KEY=你的 DeepSeek API Key
 set ACCESS_CODE=给新生使用的访问码
 ```
 
-> ⚠️ `config.py` 已被 `.gitignore` 忽略，不要提交真实密钥或访问码。网页模式下，已有个人 Key 的用户也可在界面内临时输入 Key，无需访问码。
+> `config.py` 已被 `.gitignore` 忽略，不要使用 `git add -f` 强制提交。正常运行现有知识库不需要 `CC98_ACCESS_TOKEN`；网页模式下，已有个人 Key 的用户也可在界面内临时输入，无需创建 `config.py`。
 
 ---
 
@@ -216,6 +242,7 @@ python main.py
 | 网页打不开 | `app.py` 未运行或端口不同 | 查看终端输出的 local URL |
 | 语义检索下载失败 | 网络无法访问 HuggingFace | 设置 `RETRIEVAL_MODE=keyword`；程序也会自动回退 |
 | API 调用失败 | Key 无效、余额不足、限流或网络异常 | 根据界面中的安全提示检查配置后重试 |
+| 仓库里没有 `config.py` | 真实配置按安全要求不提交 | 复制 `config.example.py` 为 `config.py`，再在本机填写 |
 
 ---
 

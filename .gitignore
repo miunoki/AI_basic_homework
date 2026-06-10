@@ -29,6 +29,8 @@ Thumbs.db
 *.swp
 *.swo
 *~
+~$*.docx
+~$*.pptx
 
 # === IDE ===
 .idea/

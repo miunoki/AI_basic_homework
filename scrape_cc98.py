@@ -7,18 +7,22 @@ import time
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ===== 配置 =====
-# ACCESS_TOKEN 请从环境变量 CC98_ACCESS_TOKEN 读取，或在这里填入你的 Token
+# ACCESS_TOKEN 请从环境变量 CC98_ACCESS_TOKEN 或本地 config.py 读取
 # 获取方式：浏览器登录 cc98.org → DevTools → Application → localStorage → access_token
 
 def _load_token():
-    """从 config.py 或环境变量加载 CC98 Access Token。"""
+    """优先从环境变量读取，其次读取本地 config.py。"""
+    env_token = os.getenv("CC98_ACCESS_TOKEN", "").strip()
+    if env_token:
+        return env_token
     try:
         from config import CC98_ACCESS_TOKEN
-        if CC98_ACCESS_TOKEN and "填入" not in CC98_ACCESS_TOKEN:
-            return CC98_ACCESS_TOKEN
-    except ImportError:
+        token = str(CC98_ACCESS_TOKEN).strip()
+        if token and "填入" not in token:
+            return token
+    except (ImportError, AttributeError):
         pass
-    return os.getenv("CC98_ACCESS_TOKEN", "")
+    return ""
 
 ACCESS_TOKEN = _load_token()
 if ACCESS_TOKEN and not ACCESS_TOKEN.startswith("Bearer "):

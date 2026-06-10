@@ -12,15 +12,18 @@ class ConfigurationError(RuntimeError):
 
 
 def _get_api_key():
-    """尝试从 config.py 或环境变量读取 API Key。"""
+    """优先从环境变量读取，其次读取本地 config.py。"""
+    env_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
+    if env_key:
+        return env_key
     try:
         from config import DEEPSEEK_API_KEY
-        key = DEEPSEEK_API_KEY
+        key = str(DEEPSEEK_API_KEY).strip()
         if key and "在这" not in key and "填入" not in key:
             return key
-    except ImportError:
+    except (ImportError, AttributeError):
         pass
-    return os.getenv("DEEPSEEK_API_KEY", "")
+    return ""
 
 
 def init_client(api_key=None):
